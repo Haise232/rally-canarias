@@ -1,6 +1,8 @@
 package com.rally.canarias.entity;
 
 import jakarta.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "equipos")
@@ -17,6 +19,9 @@ public class Equipo {
     private String marca;
 
     private Integer anioFundacion;
+
+    @OneToMany(mappedBy = "equipo", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Piloto> pilotos = new ArrayList<>();
 
     public Equipo() {
     }
@@ -67,5 +72,13 @@ public class Equipo {
 
     public void setAnioFundacion(Integer anioFundacion) {
         this.anioFundacion = anioFundacion;
+    }
+
+    public List<Piloto> getPilotos() {
+        return pilotos;
+    }
+
+    public void setPilotos(List<Piloto> pilotos) {
+        this.pilotos = pilotos;
     }
 }
