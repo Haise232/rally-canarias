@@ -26,6 +26,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     cargarEquipos();
+    initCinematic();
+    initCountdown();
+    initStandingsBars();
 });
 
 // ================================================
@@ -33,10 +36,11 @@ document.addEventListener('DOMContentLoaded', () => {
 // ================================================
 function cargarSeccion(id) {
     switch (id) {
-        case 'equipos': cargarEquipos(); break;
-        case 'pilotos': cargarPilotos(); break;
-        case 'etapas':  cargarEtapas();  break;
-        case 'tramos':  cargarTramos();  break;
+        case 'equipos':        cargarEquipos();        break;
+        case 'pilotos':        cargarPilotos();        break;
+        case 'etapas':         cargarEtapas();         break;
+        case 'tramos':         cargarTramos();         break;
+        case 'clasificacion':  renderClasificacion();  break;
     }
 }
 
@@ -59,34 +63,114 @@ function renderEquipos(equipos) {
     const grid = document.getElementById('equipos-grid');
     if (!equipos?.length) { empty(grid, '🏁', 'Sin equipos registrados'); return; }
 
-    grid.innerHTML = equipos.map(e => `
-        <div class="card">
-            <div class="card-top">
-                <div class="card-icon">🏎️</div>
-                <div class="card-meta">
-                    <span class="card-country">${x(e.nacionalidad)}</span>
+    grid.innerHTML = equipos.map(e => {
+        const tc = teamColors(e.marca);
+        return `
+        <div class="card eq-card" style="--eq-tc:${tc.stripe}; --eq-bg:${tc.bg}" data-wiki="${teamWiki(e.marca)}">
+            <div class="eq-photo">
+                <div class="eq-skeleton"></div>
+                <img class="eq-img" alt="${x(e.nombre)}">
+                <div class="eq-overlay"></div>
+                <div class="eq-photo-content">
+                    <span class="eq-chip">${x(e.marca || '?')}</span>
+                    <h3 class="eq-name">${x(e.nombre)}</h3>
+                </div>
+                <div class="eq-line"></div>
+            </div>
+            <div class="eq-stats">
+                <div class="eq-stat">
+                    <span class="eq-sk">País</span>
+                    <span class="eq-sv">${x(e.nacionalidad || 'N/A')}</span>
+                </div>
+                <div class="eq-sdiv"></div>
+                <div class="eq-stat">
+                    <span class="eq-sk">Fundación</span>
+                    <span class="eq-sv">${e.anioFundacion || 'N/A'}</span>
+                </div>
+                <div class="eq-sdiv"></div>
+                <div class="eq-stat">
+                    <span class="eq-sk">Marca</span>
+                    <span class="eq-sv">${x(e.marca || 'N/A')}</span>
                 </div>
             </div>
-            <div class="card-body">
-                <div class="card-name">${x(e.nombre)}</div>
-                <div class="card-sub">${x(e.marca || 'Sin marca')}</div>
-                <div class="card-rows">
-                    <div class="card-row">
-                        <span class="row-k">País</span>
-                        <span class="row-v">${x(e.nacionalidad || 'N/A')}</span>
-                    </div>
-                    <div class="card-row">
-                        <span class="row-k">Marca</span>
-                        <span class="row-v">${x(e.marca || 'N/A')}</span>
-                    </div>
-                    <div class="card-row">
-                        <span class="row-k">Fundación</span>
-                        <span class="row-v">${e.anioFundacion || 'N/A'}</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `).join('');
+        </div>`;
+    }).join('');
+
+    document.querySelectorAll('.eq-card[data-wiki]').forEach(loadWikiImage);
+}
+
+function teamColors(marca) {
+    const m = (marca || '').toLowerCase();
+    if (m.includes('toyota'))  return { bg:'#0e0600', stripe:'#EB0A1E' };
+    if (m.includes('hyundai')) return { bg:'#00091a', stripe:'#003E8C' };
+    if (m.includes('ford'))    return { bg:'#000814', stripe:'#1461CC' };
+    if (m.includes('citro'))   return { bg:'#0e0400', stripe:'#C8000A' };
+    if (m.includes('subaru'))  return { bg:'#00091a', stripe:'#003C8F' };
+    if (m.includes('skoda') || m.includes('škoda')) return { bg:'#001408', stripe:'#007A3D' };
+    return { bg:'#0e0000', stripe:'#E10600' };
+}
+
+// Lista de artículos a intentar en orden (el primero que tenga imagen gana)
+const TEAM_WIKI_TRIES = {
+    toyota:  ['Toyota_Yaris_WRC', 'Toyota_GR_Yaris_WRC'],
+    hyundai: ['Hyundai_i20_N_Rally1', 'Hyundai_i20_WRC'],
+    ford:    ['Ford_Fiesta_WRC', 'Ford_Puma_Rally1', 'Ford_Puma'],
+    citroen: ['Citro%C3%ABn_C3_WRC', 'Citro%C3%ABn_DS3_WRC'],
+    lancia:  ['Lancia_Rally_037', 'Lancia_Stratos', 'Lancia_Delta_HF_Integrale'],
+    skoda:   ['%C5%A0koda_Fabia_R5', '%C5%A0koda_Fabia_RS_Rally2'],
+};
+
+function teamWiki(marca) {
+    const m = (marca || '').toLowerCase();
+    if (m.includes('toyota'))  return TEAM_WIKI_TRIES.toyota[0];
+    if (m.includes('hyundai')) return TEAM_WIKI_TRIES.hyundai[0];
+    if (m.includes('ford'))    return TEAM_WIKI_TRIES.ford[0];
+    if (m.includes('citro'))   return TEAM_WIKI_TRIES.citroen[0];
+    if (m.includes('lancia'))  return TEAM_WIKI_TRIES.lancia[0];
+    if (m.includes('skoda') || m.includes('škoda')) return TEAM_WIKI_TRIES.skoda[0];
+    return '';
+}
+
+async function fetchWikiImage(article) {
+    const res = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${article}`);
+    if (!res.ok) return null;
+    const data = await res.json();
+    let src = data.originalimage?.source || data.thumbnail?.source;
+    if (!src) return null;
+    // Upscale thumbnails, leave originals as-is
+    if (src.includes('/thumb/')) src = src.replace(/\/\d+px-/, '/800px-');
+    return src;
+}
+
+async function loadWikiImage(card) {
+    const marca = (card.style.getPropertyValue('--eq-tc') ? '' : '');
+    // Determinar qué lista de artículos usar según el color del equipo / data-wiki
+    const firstArticle = card.dataset.wiki;
+    if (!firstArticle) return;
+
+    const img = card.querySelector('.eq-img');
+    if (!img) return;
+
+    // Identificar lista de fallbacks
+    const m = Object.keys(TEAM_WIKI_TRIES).find(k =>
+        TEAM_WIKI_TRIES[k][0] === firstArticle || TEAM_WIKI_TRIES[k].includes(firstArticle)
+    );
+    const articles = m ? TEAM_WIKI_TRIES[m] : [firstArticle];
+
+    for (const article of articles) {
+        try {
+            const src = await fetchWikiImage(article);
+            if (!src) continue;
+            img.onload = () => {
+                img.classList.add('eq-loaded');
+                card.querySelector('.eq-skeleton')?.remove();
+            };
+            img.onerror = () => {};
+            img.src = src;
+            return;
+        } catch {}
+    }
+    card.querySelector('.eq-skeleton')?.remove();
 }
 
 // ================================================
@@ -219,6 +303,58 @@ function renderTramos(tramos) {
 }
 
 // ================================================
+// COUNTDOWN TIMER
+// ================================================
+function initCountdown() {
+    const EVENT = new Date('2026-06-25T19:00:00+02:00');
+
+    function setDigits(id, value, len) {
+        const s = String(Math.max(0, value)).padStart(len, '0');
+        const el = document.getElementById(id);
+        if (!el) return;
+        const digits = el.querySelectorAll('.cd-digit');
+        digits.forEach((d, i) => {
+            const newVal = s[i] ?? '0';
+            if (d.textContent !== newVal) {
+                d.classList.add('flip');
+                setTimeout(() => { d.textContent = newVal; d.classList.remove('flip'); }, 75);
+            }
+        });
+    }
+
+    function tick() {
+        const diff = EVENT - Date.now();
+        if (diff <= 0) { setDigits('cd-days',0,2); setDigits('cd-hours',0,2); setDigits('cd-mins',0,2); setDigits('cd-secs',0,2); return; }
+        setDigits('cd-days',  Math.floor(diff / 86400000), 2);
+        setDigits('cd-hours', Math.floor(diff / 3600000) % 24, 2);
+        setDigits('cd-mins',  Math.floor(diff / 60000) % 60, 2);
+        setDigits('cd-secs',  Math.floor(diff / 1000)  % 60, 2);
+    }
+
+    tick();
+    setInterval(tick, 1000);
+}
+
+// ================================================
+// STANDINGS BARS — animar al entrar en viewport
+// ================================================
+function initStandingsBars() {
+    const section = document.getElementById('std-section');
+    if (!section) return;
+
+    const obs = new IntersectionObserver(entries => {
+        if (!entries[0].isIntersecting) return;
+        section.querySelectorAll('.std-bar-fill').forEach((bar, i) => {
+            bar.style.transition = `transform 1s cubic-bezier(0.22,1,0.36,1) ${i * 0.1}s`;
+            bar.style.transform  = 'scaleX(1)';
+        });
+        obs.disconnect();
+    }, { threshold: 0.25 });
+
+    obs.observe(section);
+}
+
+// ================================================
 // UTILITIES
 // ================================================
 function x(text) {
@@ -266,14 +402,245 @@ document.getElementById('buscar-equipo')?.addEventListener('input', () => {});
 document.getElementById('buscar-piloto')?.addEventListener('input', () => {});
 
 // ================================================
+// CINEMATIC SCROLL — estilo Apple
+// ================================================
+function initCinematic() {
+    const section = document.getElementById('cin-section');
+    if (!section) return;
+
+    const progressFill = document.getElementById('cin-progress');
+    const counter      = document.getElementById('cin-counter');
+    const states       = [
+        document.getElementById('cin-s0'),
+        document.getElementById('cin-s1'),
+        document.getElementById('cin-s2'),
+    ];
+    const islands = [
+        document.getElementById('cin-isl-0'),
+        document.getElementById('cin-isl-1'),
+        document.getElementById('cin-isl-2'),
+    ];
+
+    // Breakpoints: s0: 0–0.33 | s1: 0.33–0.70 | s2: 0.70–1
+    const B = [0, 0.33, 0.70, 1];
+
+    function clamp(v, a, b) { return Math.min(b, Math.max(a, v)); }
+    function invlerp(a, b, v) { return clamp((v - a) / (b - a), 0, 1); }
+    // easeOutExpo: empieza rápido, frena suave al final
+    function easeOutExpo(t) { return t >= 1 ? 1 : 1 - Math.pow(2, -10 * t); }
+    // easeOutBack: llega ligeramente pasado y rebota
+    function easeOutBack(t) {
+        const c1 = 1.70158, c3 = c1 + 1;
+        return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
+    }
+
+    let raf = null;
+    let lastVal = -1;
+    let settledTimer = null;
+
+    function update() {
+        raf = null;
+        const rect       = section.getBoundingClientRect();
+        const scrollable = section.offsetHeight - window.innerHeight;
+        const p          = clamp(-rect.top / scrollable, 0, 1);
+
+        // Barra de progreso (sin transición CSS — se actualiza directamente)
+        if (progressFill) progressFill.style.width = (p * 100) + '%';
+
+        // Fase activa
+        let active = 0;
+        if (p >= B[2]) active = 2;
+        else if (p >= B[1]) active = 1;
+
+        states.forEach((s, i) => { if (s) s.classList.toggle('cin-on', i === active); });
+
+        // ── Contador con easeOutExpo y efecto blur ──
+        if (counter) {
+            const t   = easeOutExpo(invlerp(0, B[1] * 0.85, p));
+            const val = Math.round(t * 350);
+
+            if (val !== lastVal) {
+                lastVal = val;
+                counter.textContent = val;
+
+                // Blur mientras cambia, settle cuando llega a 350
+                if (val < 350) {
+                    counter.classList.add('cin-blur');
+                    counter.classList.remove('cin-settled');
+                    clearTimeout(settledTimer);
+                } else {
+                    counter.classList.remove('cin-blur');
+                    settledTimer = setTimeout(() => counter.classList.add('cin-settled'), 80);
+                }
+            }
+        }
+
+        // ── Islas: entran en secuencia durante fase 1 ──
+        const inIslands = active === 1 || active === 2;
+        const s1p = invlerp(B[1], B[2], p);
+        islands.forEach((isl, i) => {
+            if (!isl) return;
+            isl.classList.toggle('cin-isl-in', inIslands && s1p > i * 0.20);
+        });
+    }
+
+    window.addEventListener('scroll', () => {
+        if (!raf) raf = requestAnimationFrame(update);
+    }, { passive: true });
+
+    update();
+}
+
+// ================================================
+// MODAL — CLASIFICACIÓN COMPLETA
+// ================================================
+// Flags ISO-2 por piloto
+const STANDINGS_DATA = [
+  { pos:1,  fn:'Elfyn',      ln:'EVANS',         m:'toyota',  flag:'gb', photo:'assets/evans-2026-1x1.avif',   cat:'WRC',  total:151, r:[26,34,6,8,27,22,28] },
+  { pos:2,  fn:'Takamoto',   ln:'KATSUTA',       m:'toyota',  flag:'jp', photo:'assets/katsuta-2026-1x1.avif', cat:'WRC',  total:131, r:[6,24,25,26,18,12,20] },
+  { pos:3,  fn:'Oliver',     ln:'SOLBERG',       m:'toyota',  flag:'no', photo:'assets/solberg-2026-1x1.avif', cat:'WRC',  total:102, r:[30,17,11,10,'R',24,10] },
+  { pos:4,  fn:'Sami',       ln:'PAJARI',        m:'toyota',  flag:'fi', photo:'assets/pajari-2026-1x1.avif',  cat:'WRC2', total:96,  r:['R',17,15,20,20,6,18] },
+  { pos:5,  fn:'Sébastien',  ln:'OGIER',         m:'toyota',  flag:'fr', photo:'assets/ogier-2026-1x1.avif',   cat:'WRC',  total:90,  r:[18,'—',8,'—',32,9,23] },
+  { pos:6,  fn:'Adrien',     ln:'FOURMAUX',      m:'hyundai', flag:'fr', photo:null, cat:'WRC',  total:89,  r:[17,11,19,2,10,20,10] },
+  { pos:7,  fn:'Thierry',    ln:'NEUVILLE',      m:'hyundai', flag:'be', photo:null, cat:'WRC',  total:73,  r:[10,11,4,'R',10,30,8] },
+  { pos:8,  fn:'Hayden',     ln:'PADDON',        m:'hyundai', flag:'nz', photo:null, cat:'WRC2', total:21,  r:[0,'—','—',15,'—','—',6] },
+  { pos:9,  fn:'Esapekka',   ln:'LAPPI',         m:'hyundai', flag:'fi', photo:null, cat:'WRC',  total:21,  r:['—',9,12,'—','—','—','—'] },
+  { pos:10, fn:'Yohan',      ln:'ROSSEL',        m:'lancia',  flag:'fr', photo:null, cat:'WRC2', total:20,  r:[6,'—','—',12,2,'—','—'] },
+  { pos:11, fn:'Léo',        ln:'ROSSEL',        m:'citroen', flag:'fr', photo:null, cat:'WRC2', total:18,  r:[8,'—','—',10,'—','—','—'] },
+  { pos:12, fn:'Jon',        ln:'ARMSTRONG',     m:'ford',    flag:'gb', photo:null, cat:'WRC2', total:14,  r:['R',4,0,6,0,'R',4] },
+  { pos:13, fn:'Robert',     ln:'VIRVES',        m:'skoda',   flag:'ee', photo:null, cat:'WRC2', total:10,  r:['—','—',10,'—','—','—','—'] },
+  { pos:14, fn:'Nikolay',    ln:'GRYAZIN',       m:'lancia',  flag:'ru', photo:null, cat:'WRC2', total:10,  r:['—','—','—',8,'—','—',2] },
+  { pos:15, fn:'Daniel',     ln:'SORDO',         m:'hyundai', flag:'es', photo:null, cat:'WRC',  total:10,  r:['—','—','—','—',6,4,'—'] },
+  { pos:16, fn:'Gus',        ln:'GREENSMITH',    m:'toyota',  flag:'gb', photo:null, cat:'WRC2', total:8,   r:['—','—',8,'—','—','—','—'] },
+  { pos:17, fn:'Alejandro',  ln:'CACHÓN',        m:'toyota',  flag:'es', photo:null, cat:'WRC2', total:7,   r:['—','—','—',6,1,'—','—'] },
+  { pos:18, fn:'Joshua',     ln:'MCERLEAN',      m:'ford',    flag:'gb', photo:null, cat:'WRC2', total:7,   r:['R',2,'R',0,4,0,1] },
+  { pos:19, fn:'Fabrizio',   ln:'ZALDIVAR',      m:'skoda',   flag:'py', photo:null, cat:'WRC2', total:6,   r:['—','—',6,'—','—','—','—'] },
+  { pos:20, fn:'Roberto',    ln:'DAPRÀ',         m:'skoda',   flag:'it', photo:null, cat:'WRC2', total:6,   r:[4,'—','—',2,'—','—','—'] },
+  { pos:21, fn:'Roope',      ln:'KORHONEN',      m:'toyota',  flag:'fi', photo:null, cat:'WRC2', total:5,   r:['—',1,'—',4,'—','—','—'] },
+  { pos:22, fn:'Andreas',    ln:'MIKKELSEN',     m:'skoda',   flag:'no', photo:null, cat:'WRC2', total:4,   r:['—','—',4,'—','—','—','—'] },
+  { pos:23, fn:'Mārtinš',    ln:'SESKS',         m:'ford',    flag:'lv', photo:null, cat:'WRC2', total:2,   r:['—',0,'—','—','—',2,'—'] },
+  { pos:24, fn:'Diego',      ln:'DOMÍNGUEZ',     m:'toyota',  flag:'py', photo:null, cat:'WRC2', total:2,   r:['—','—',2,'—','—','—','—'] },
+  { pos:25, fn:'Arthur',     ln:'PELAMOURGUES',  m:'hyundai', flag:'fr', photo:null, cat:'WRC2', total:2,   r:[2,'—','—','—','—','—','—'] },
+  { pos:26, fn:'Matteo',     ln:'FONTANA',       m:'ford',    flag:'it', photo:null, cat:'WRC2', total:2,   r:[2,'—','—','—','—','—','—'] },
+  { pos:27, fn:'Eric',       ln:'CAMILLI',       m:'skoda',   flag:'fr', photo:null, cat:'WRC2', total:1,   r:[1,'—','—','—','—','—','—'] },
+  { pos:28, fn:'Emil',       ln:'LINDHOLM',      m:'skoda',   flag:'fi', photo:null, cat:'WRC2', total:1,   r:['—','—','—',1,'—','—','—'] },
+  { pos:29, fn:'Teemu',      ln:'SUNINEN',       m:'toyota',  flag:'fi', photo:null, cat:'WRC2', total:1,   r:['—','—','—','—','—',1,'—'] },
+  { pos:30, fn:'Grégoire',   ln:'MUNSTER',       m:'ford',    flag:'lu', photo:null, cat:'WRC2', total:0,   r:['R','—','—','—','—','—','—'] },
+  { pos:31, fn:'Romet',      ln:'JÜRGENSON',     m:'ford',    flag:'ee', photo:null, cat:'WRC2', total:0,   r:['—','—','—','—','—','—','—'] },
+  { pos:32, fn:'Lorenzo',    ln:'BERTELLI',      m:'toyota',  flag:'it', photo:null, cat:'WRC2', total:0,   r:['—',0,'—','—','—','—','—'] },
+];
+
+const LEADER_PTS = 151;
+
+function rdCls(v) {
+    if (v === 'R')  return 'cls-r cls-r-ret';
+    if (v === '—')  return 'cls-r cls-r-none';
+    if (v >= 25)    return 'cls-r cls-r-high';
+    if (v >= 10)    return 'cls-r cls-r-med';
+    if (v >= 1)     return 'cls-r cls-r-low';
+    return 'cls-r cls-r-zero';
+}
+
+function renderClasificacion(filter = 'all') {
+    const list = document.getElementById('cls-list');
+    if (!list) return;
+
+    const data = filter === 'all' ? STANDINGS_DATA
+                : STANDINGS_DATA.filter(d => d.cat === filter);
+
+    const photoCell = d => d.photo
+        ? `<img src="${d.photo}" class="cls-avatar" alt="${d.fn} ${d.ln}" loading="lazy">`
+        : `<span class="cls-initials">${d.fn[0]}${d.ln[0]}</span>`;
+
+    list.innerHTML = `
+        <div class="cls-table-wrap">
+            <table class="cls-table">
+                <thead>
+                    <tr>
+                        <th class="cls-th-pos">POS</th>
+                        <th class="cls-th-driver">PILOTO</th>
+                        <th class="cls-th-team">EQUIPO</th>
+                        <th class="cls-th-pts">PTS</th>
+                        <th class="cls-th-bar"></th>
+                        <th>R1</th><th>R2</th><th>R3</th><th>R4</th><th>R5</th><th>R6</th><th>R7</th>
+                        <th class="cls-th-fut">R8</th><th class="cls-th-fut">R9</th>
+                        <th class="cls-th-fut">R10</th><th class="cls-th-fut">R11</th>
+                        <th class="cls-th-fut">R12</th><th class="cls-th-fut">R13</th>
+                        <th class="cls-th-fut">R14</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${data.map(d => `
+                    <tr class="cls-row">
+                        <td class="cls-td-pos">
+                            <span class="cls-pos ${d.pos<=3?'cls-pos-gold':d.pos<=7?'cls-pos-bright':''}">${d.pos}</span>
+                        </td>
+                        <td class="cls-td-driver">
+                            <div class="cls-driver-wrap">
+                                <div class="cls-photo-flag">
+                                    <div class="cls-photo-wrap">${photoCell(d)}</div>
+                                    <img class="cls-flag" src="https://flagcdn.com/w20/${d.flag}.png" width="20" height="14" alt="${d.flag}" loading="lazy">
+                                </div>
+                                <div class="cls-name">
+                                    <span class="cls-fn">${d.fn}</span>
+                                    <span class="cls-ln">${d.ln}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="cls-td-team">
+                            <span class="sm-chip sm-chip-${d.m}">${d.m.toUpperCase()}</span>
+                        </td>
+                        <td class="cls-td-pts">
+                            <span class="cls-pts ${d.pos===1?'cls-pts-gold':''}">${d.total}</span>
+                        </td>
+                        <td class="cls-td-bar">
+                            <div class="cls-bar-bg">
+                                <div class="cls-bar-fill sm-chip-${d.m}-bar" style="width:${Math.round(d.total/LEADER_PTS*100)}%"></div>
+                            </div>
+                        </td>
+                        ${d.r.map(v=>`<td><span class="${rdCls(v)}">${v}</span></td>`).join('')}
+                        <td class="cls-r cls-r-none">—</td><td class="cls-r cls-r-none">—</td>
+                        <td class="cls-r cls-r-none">—</td><td class="cls-r cls-r-none">—</td>
+                        <td class="cls-r cls-r-none">—</td><td class="cls-r cls-r-none">—</td>
+                        <td class="cls-r cls-r-none">—</td>
+                    </tr>`).join('')}
+                </tbody>
+            </table>
+        </div>`;
+
+    // Filtros
+    list.querySelectorAll('.cls-btn')?.forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.cls-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderClasificacion(btn.dataset.cat);
+        });
+    });
+}
+
+// "Ver clasificación completa" navega al tab
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelector('.std-viewall')?.addEventListener('click', e => {
+        e.preventDefault();
+        const tab = document.querySelector('[data-tab="clasificacion"]');
+        if (tab) {
+            tab.click();
+            document.querySelector('.nav-tabs')?.scrollIntoView({ behavior:'smooth', block:'start' });
+        }
+    });
+});
+
+// ================================================
 // DEMO DATA
 // ================================================
 function demoEquipos() {
     return [
-        { id:1, nombre:'Toyota Gazoo Racing WRT',      nacionalidad:'Japón',          marca:'Toyota',  anioFundacion:2015 },
-        { id:2, nombre:'Hyundai Shell Mobis WRT',       nacionalidad:'Corea del Sur',  marca:'Hyundai', anioFundacion:2013 },
-        { id:3, nombre:'M-Sport Ford World Rally Team', nacionalidad:'Reino Unido',    marca:'Ford',    anioFundacion:1997 },
-        { id:4, nombre:'Citroën Total WRT',             nacionalidad:'Francia',        marca:'Citroën', anioFundacion:2003 },
+        { id:1, nombre:'Toyota Gazoo Racing WRT', nacionalidad:'Japón',           marca:'Toyota',  anioFundacion:2015 },
+        { id:2, nombre:'Hyundai Shell Mobis WRT', nacionalidad:'Corea del Sur',   marca:'Hyundai', anioFundacion:2013 },
+        { id:3, nombre:'M-Sport Ford WRT',        nacionalidad:'Reino Unido',     marca:'Ford',    anioFundacion:1997 },
+        { id:4, nombre:'Citroën Racing',          nacionalidad:'Francia',         marca:'Citroën', anioFundacion:2003 },
+        { id:5, nombre:'Lancia Corse HF',         nacionalidad:'Italia',          marca:'Lancia',  anioFundacion:2024 },
+        { id:6, nombre:'Škoda Motorsport',        nacionalidad:'República Checa', marca:'Škoda',   anioFundacion:1999 },
     ];
 }
 
