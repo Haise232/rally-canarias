@@ -16,6 +16,9 @@ public interface PilotoRepository extends JpaRepository<Piloto, Long> {
 
     List<Piloto> findByNombreContainingIgnoreCase(String nombre, Sort sort);
 
-    @Query("SELECT p FROM Piloto p JOIN p.tramos t GROUP BY p HAVING COUNT(t) >= :minTramos")
-    List<Piloto> findPilotosConMinimoTramos(@Param("minTramos") int minTramos);
+    List<Piloto> findByActivoTrue();
+
+    // @Query("SELECT p FROM Piloto p JOIN p.tramos t GROUP BY p HAVING COUNT(t) >= :minTramos")
+    // List<Piloto> findPilotosConMinimoTramos(@Param("minTramos") int minTramos);
+    // Nota: Se activará cuando se añada la relación @ManyToMany Piloto-Tramo (Commit 12)
 }
