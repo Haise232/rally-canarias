@@ -1,5 +1,6 @@
 package com.rally.canarias.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,6 +22,7 @@ public class Equipo {
     private Integer anioFundacion;
 
     @OneToMany(mappedBy = "equipo", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnoreProperties({"equipo"})
     private List<Piloto> pilotos = new ArrayList<>();
 
     public Equipo() {

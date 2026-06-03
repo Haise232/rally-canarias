@@ -1,5 +1,6 @@
 package com.rally.canarias.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 
 @Entity
@@ -23,6 +24,7 @@ public class Piloto {
 
     @ManyToOne
     @JoinColumn(name = "equipo_id")
+    @JsonIgnoreProperties({"pilotos"})
     private Equipo equipo;
 
     public Piloto() {
