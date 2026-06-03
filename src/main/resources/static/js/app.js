@@ -231,20 +231,95 @@ async function cargarEtapas() {
     }
 }
 
+function islaClass(isla) {
+    const i = (isla || '').toLowerCase();
+    if (i.includes('tenerife'))  return 'tenerife';
+    if (i.includes('gran'))      return 'grancanaria';
+    if (i.includes('lanzarote')) return 'lanzarote';
+    return 'default';
+}
+
 function renderEtapas(etapas) {
     const tl = document.getElementById('etapas-timeline');
     if (!etapas?.length) { empty(tl, '🗺️', 'Sin etapas registradas'); return; }
 
-    tl.innerHTML = etapas.map(e => `
-        <div class="timeline-item">
-            <div class="tl-top">
-                <span class="tl-name">${x(e.nombre)}</span>
-                <span class="tl-date">${fecha(e.fecha)}</span>
+    const totalKm     = etapas.reduce((s, e) => s + (e.km || (e.tramos?.reduce((a, t) => a + (t.km || 0), 0) || 0)), 0);
+    const totalTramos = etapas.reduce((s, e) => s + (e.tramos?.length || 0), 0);
+    const islas       = [...new Set(etapas.map(e => e.isla).filter(Boolean))];
+
+    const summaryHtml = `
+        <div class="etapa-summary">
+            <div class="etapa-sumstat">
+                <span class="etapa-sumval">${etapas.length}</span>
+                <span class="etapa-sumlbl">Etapas</span>
             </div>
-            <p class="tl-desc">${x(e.descripcion || '')}</p>
-            <span class="tl-isla">🏝 ${x(e.isla || 'Islas Canarias')}</span>
-        </div>
-    `).join('');
+            <span class="etapa-sumdiv"></span>
+            <div class="etapa-sumstat">
+                <span class="etapa-sumval">${totalTramos}</span>
+                <span class="etapa-sumlbl">Tramos</span>
+            </div>
+            <span class="etapa-sumdiv"></span>
+            <div class="etapa-sumstat">
+                <span class="etapa-sumval">${Math.round(totalKm)}</span>
+                <span class="etapa-sumlbl">km totales</span>
+            </div>
+            <span class="etapa-sumdiv"></span>
+            <div class="etapa-sumstat">
+                <span class="etapa-sumval">${islas.length}</span>
+                <span class="etapa-sumlbl">Islas</span>
+            </div>
+        </div>`;
+
+    tl.innerHTML = summaryHtml + etapas.map((e, i) => {
+        const slug    = islaClass(e.isla);
+        const stageKm = e.km || (e.tramos?.reduce((s, t) => s + (t.km || 0), 0) || 0);
+        const tramosHtml = e.tramos?.length ? `
+            <div class="etapa-tramos">
+                ${e.tramos.map(t => `
+                    <div class="etapa-tramo">
+                        <span class="etapa-tramo-dot"></span>
+                        <span class="etapa-tramo-name">${x(t.nombre)}</span>
+                        <span class="etapa-tramo-km">${t.km} km</span>
+                        <span class="cin-tramo-dif ${(t.dificultad || '').toLowerCase()}">${x(t.dificultad)}</span>
+                    </div>`).join('')}
+            </div>` : '';
+
+        return `
+        <div class="etapa-item" data-isla="${x(e.isla || '')}">
+            <div class="etapa-marker">
+                <div class="etapa-num-badge etapa-isl-${slug}">E${e.numero || i + 1}</div>
+            </div>
+            <div class="etapa-card etapa-isl-${slug}">
+                <div class="etapa-card-header">
+                    <div class="etapa-card-title-group">
+                        <span class="etapa-stage-label">ETAPA ${e.numero || i + 1}</span>
+                        <h3 class="etapa-name">${x(e.nombre)}</h3>
+                    </div>
+                    <span class="etapa-date">${fecha(e.fecha)}</span>
+                </div>
+                <p class="etapa-desc">${x(e.descripcion || '')}</p>
+                <div class="etapa-card-footer">
+                    <span class="etapa-isla-badge etapa-isl-${slug}">
+                        <span class="etapa-isla-dot"></span>${x(e.isla || 'Islas Canarias')}
+                    </span>
+                    ${stageKm ? `<span class="etapa-stat"><span class="etapa-stat-val">${stageKm.toFixed(1)}</span>&thinsp;km</span>` : ''}
+                    ${e.tramos?.length ? `<span class="etapa-stat"><span class="etapa-stat-val">${e.tramos.length}</span>&thinsp;tramo${e.tramos.length !== 1 ? 's' : ''}</span>` : ''}
+                </div>
+                ${tramosHtml}
+            </div>
+        </div>`;
+    }).join('');
+
+    document.querySelectorAll('.etapa-flt').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.etapa-flt').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const isla = btn.dataset.isla;
+            document.querySelectorAll('.etapa-item').forEach(item => {
+                item.style.display = (!isla || item.dataset.isla === isla) ? '' : 'none';
+            });
+        });
+    });
 }
 
 // ================================================
@@ -659,11 +734,11 @@ function demoPilotos() {
 
 function demoEtapas() {
     return [
-        { id:1, nombre:'Etapa 1 — Arafo',       fecha:'2026-03-15', descripcion:'Tramos rápidos con curvas técnicas en la zona norte de Tenerife. Asfalto abierto y vistas al Teide.',         isla:'Tenerife' },
-        { id:2, nombre:'Etapa 2 — Güimar',      fecha:'2026-03-16', descripcion:'Superficie mixta con tramos de tierra y asfalto que atraviesan el barranco de Güimar.',                       isla:'Tenerife' },
-        { id:4, nombre:'Etapa 4 — Tejeda',      fecha:'2026-03-18', descripcion:'Alta montaña con cambios de altitud pronunciados. Roca volcánica y vistas al Roque Nublo.',                  isla:'Gran Canaria' },
-        { id:5, nombre:'Etapa 5 — Maspalomas',  fecha:'2026-03-19', descripcion:'Tramos costeros entre dunas con arena y gravilla. Uno de los finales más espectaculares del campeonato.',     isla:'Gran Canaria' },
-        { id:7, nombre:'Etapa 7 — Haría',       fecha:'2026-03-21', descripcion:'Paisaje volcánico único en el Valle de Mil Palmeras. Tramos estrechos a través del Parque Nacional de Timanfaya.', isla:'Lanzarote' },
+        { id:1, numero:1, nombre:'Arafo',      fecha:'2026-03-15', descripcion:'Tramos rápidos con curvas técnicas en la zona norte de Tenerife. Asfalto abierto y vistas al Teide.',                        isla:'Tenerife',    km:37.7, tramos:[{nombre:'Arafo — La Cuesta',            km:15.2, dificultad:'ALTA'}, {nombre:'La Esperanza — El Portillo', km:22.5, dificultad:'MEDIA'}] },
+        { id:2, numero:2, nombre:'Güimar',     fecha:'2026-03-16', descripcion:'Superficie mixta con tramos de tierra y asfalto que atraviesan el dramático barranco de Güimar.',                            isla:'Tenerife',    km:24.9, tramos:[{nombre:'Güimar — Fasnia',              km:12.4, dificultad:'MEDIA'}, {nombre:'Fasnia — Arico',                km:12.5, dificultad:'BAJA'}] },
+        { id:4, numero:4, nombre:'Tejeda',     fecha:'2026-03-18', descripcion:'Alta montaña con cambios de altitud pronunciados. Roca volcánica y espectaculares vistas al Roque Nublo.',                  isla:'Gran Canaria',km:40.4, tramos:[{nombre:'Tejeda — Artenara',             km:17.9, dificultad:'ALTA'}, {nombre:'Artenara — Cruz de Tejeda',  km:22.5, dificultad:'MEDIA'}] },
+        { id:5, numero:5, nombre:'Maspalomas', fecha:'2026-03-19', descripcion:'Tramos costeros entre dunas con arena y gravilla. Uno de los finales más espectaculares del campeonato.',                    isla:'Gran Canaria',km:27.0, tramos:[{nombre:'Maspalomas — Meloneras',       km:10.5, dificultad:'BAJA'},  {nombre:'Playa del Inglés — S.Agustín',km:16.5, dificultad:'MEDIA'}] },
+        { id:7, numero:7, nombre:'Haría',      fecha:'2026-03-21', descripcion:'Paisaje volcánico único en el Valle de Mil Palmeras. Tramos estrechos a través del Parque Nacional de Timanfaya.',         isla:'Lanzarote',   km:25.0, tramos:[{nombre:'Haría — Orzola',               km:13.8, dificultad:'MEDIA'}, {nombre:'Timanfaya — Yaiza',           km:11.2, dificultad:'ALTA'}] },
     ];
 }
 

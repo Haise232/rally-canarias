@@ -62,9 +62,42 @@ body {
     background: var(--surface-0);
     overflow: hidden;
     border-bottom: 1px solid var(--w08);
+    min-height: 100vh;
+}
+/* Bottom fade — blends photo into the next dark section */
+.hero::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 220px;
+    background: linear-gradient(to bottom, transparent, var(--bg));
+    pointer-events: none;
+    z-index: 2;
 }
 
 .hero-bg { position: absolute; inset: 0; pointer-events: none; }
+
+.hero-photo {
+    position: absolute;
+    inset: 0;
+    background: url('../assets/Foto index.png') center 28% / cover no-repeat;
+    z-index: 0;
+    animation: hero-kb 16s ease-out both;
+    will-change: transform;
+}
+@keyframes hero-kb {
+    from { transform: scale(1.08); }
+    to   { transform: scale(1.00); }
+}
+
+.hero-photo-overlay {
+    position: absolute;
+    inset: 0;
+    background:
+        linear-gradient(to right,  rgba(9,9,9,0.90) 0%, rgba(9,9,9,0.55) 48%, rgba(9,9,9,0.30) 100%),
+        linear-gradient(to bottom, rgba(9,9,9,0.15) 0%, rgba(9,9,9,0.05) 35%, rgba(9,9,9,0.70) 100%);
+    z-index: 1;
+}
 
 /* Animated diagonal speed lines */
 .hero-stripes {
@@ -76,6 +109,7 @@ body {
         rgba(225,6,0,0.04) 56px, rgba(225,6,0,0.04) 58px
     );
     animation: stripes-drift 28s linear infinite;
+    z-index: 2;
 }
 @keyframes stripes-drift {
     from { transform: translateX(0); }
@@ -87,18 +121,20 @@ body {
     position: absolute;
     right: -10%; top: 0; bottom: 0; width: 55%;
     background: radial-gradient(ellipse at 80% 50%,
-        rgba(225,6,0,0.10) 0%,
-        rgba(225,6,0,0.04) 45%,
+        rgba(225,6,0,0.18) 0%,
+        rgba(225,6,0,0.07) 45%,
         transparent 70%);
+    z-index: 2;
 }
 
 .hero-inner {
-    position: relative; z-index: 1;
+    position: relative; z-index: 3;
     max-width: 1280px;
     margin: 0 auto;
     padding: 28px 48px 0;
     display: flex;
     flex-direction: column;
+    min-height: 100vh;
 }
 
 /* Top bar */
@@ -189,7 +225,11 @@ body {
 
 /* Hero title block */
 .hero-main {
-    padding-bottom: 36px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 36px 0 36px;
 }
 
 .hero-eyebrow {
@@ -273,6 +313,59 @@ body {
     text-transform: uppercase;
     letter-spacing: 2px;
     text-align: center;
+}
+
+/* ================================================
+   HERO — ENTRANCE ANIMATIONS
+   ================================================ */
+.hero-topbar   { animation: h-down  0.7s var(--ease) 0.05s both; }
+.hero-eyebrow  { animation: h-up    0.6s var(--ease) 0.30s both; }
+.ht-rally      { animation: h-wipe  1.0s var(--ease) 0.50s both; }
+.ht-canarias   { animation: h-up    0.7s var(--ease) 0.80s both; }
+.hero-year     { animation: h-up    0.5s var(--ease) 1.00s both; }
+.hero-statsbar { animation: h-up    0.6s var(--ease) 1.15s both; }
+.hero-scroll-hint { animation: h-up 0.6s var(--ease) 1.40s both; }
+
+@keyframes h-down {
+    from { opacity: 0; transform: translateY(-18px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes h-up {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes h-wipe {
+    from { opacity: 0; clip-path: inset(0 100% 0 0); transform: translateX(-24px); }
+    to   { opacity: 1; clip-path: inset(0 0%   0 0); transform: translateX(0); }
+}
+
+/* Scroll hint */
+.hero-scroll-hint {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 20px 0 36px;
+}
+.hero-scroll-txt {
+    font-family: var(--f-data);
+    font-size: 0.55rem;
+    letter-spacing: 4px;
+    color: var(--w35);
+    text-transform: uppercase;
+}
+.hero-scroll-line {
+    width: 1px;
+    height: 44px;
+    background: linear-gradient(to bottom, var(--w35), transparent);
+    transform-origin: top;
+    animation: scroll-drop 2s ease-in-out infinite 1.8s;
+}
+@keyframes scroll-drop {
+    0%   { transform: scaleY(0); opacity: 1;   transform-origin: top; }
+    50%  { transform: scaleY(1); opacity: 1;   transform-origin: top; }
+    51%  { transform-origin: bottom; }
+    100% { transform: scaleY(0); opacity: 0.2; transform-origin: bottom; }
 }
 
 /* ================================================
@@ -875,114 +968,267 @@ body {
 .estado-inactivo .estado-dot { background: var(--red); }
 
 /* ================================================
-   STAGES TIMELINE
+   STAGES TIMELINE — redesigned
    ================================================ */
 .timeline {
     position: relative;
     display: flex;
     flex-direction: column;
-    gap: 0;
-    padding-left: 52px;
+    gap: 16px;
+    padding-left: 0;
 }
+.timeline::before { display: none; }
 
-/* Vertical connector line */
-.timeline::before {
-    content: '';
-    position: absolute;
-    left: 12px; top: 28px; bottom: 28px;
-    width: 1px;
-    background: linear-gradient(to bottom,
-        var(--red) 0%,
-        rgba(225,6,0,0.3) 60%,
-        transparent 100%);
-}
-
-.timeline-item {
-    position: relative;
+/* Summary stats strip */
+.etapa-summary {
+    display: flex;
+    align-items: center;
     background: var(--surface-1);
     border: 1px solid var(--w08);
-    border-left: 2px solid var(--w08);
-    padding: 24px 28px;
-    margin-bottom: 14px;
-    transition: transform 0.24s var(--ease), border-color 0.2s, box-shadow 0.24s;
+    border-left: 3px solid var(--red);
+    padding: 16px 28px;
+    gap: 0;
+    margin-bottom: 8px;
+}
+.etapa-sumstat {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+.etapa-sumdiv {
+    width: 1px; height: 32px;
+    background: var(--w15);
+    flex-shrink: 0;
+}
+.etapa-sumval {
+    font-family: var(--f-display);
+    font-size: 1.8rem;
+    font-weight: 900;
+    font-style: italic;
+    color: var(--w100);
+    line-height: 1;
+}
+.etapa-sumlbl {
+    font-family: var(--f-data);
+    font-size: 0.6rem;
+    font-weight: 600;
+    color: var(--w35);
+    text-transform: uppercase;
+    letter-spacing: 2px;
 }
 
-/* Dot marker */
-.timeline-item::before {
+/* Item row */
+.etapa-item {
+    display: grid;
+    grid-template-columns: 56px 1fr;
+    gap: 0 16px;
+    align-items: start;
+    position: relative;
+}
+.etapa-item:not(:last-child)::before {
     content: '';
     position: absolute;
-    left: -48px; top: 27px;
-    width: 14px; height: 14px;
-    border-radius: 50%;
-    background: var(--surface-0);
-    border: 2px solid var(--red);
+    left: 26px;
+    top: 48px;
+    bottom: -16px;
+    width: 1px;
+    background: linear-gradient(to bottom, var(--w15), transparent);
+    z-index: 0;
+}
+
+/* Stage badge */
+.etapa-marker {
+    display: flex;
+    justify-content: center;
+    padding-top: 2px;
+    position: relative;
     z-index: 1;
 }
-
-/* Connector arrow */
-.timeline-item::after {
-    content: '';
-    position: absolute;
-    left: -2px; top: 0; bottom: 0;
-    width: 2px;
-    background: transparent;
-    transition: background 0.2s;
+.etapa-num-badge {
+    width: 44px; height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--f-display);
+    font-size: 0.72rem;
+    font-weight: 900;
+    font-style: italic;
+    letter-spacing: 1px;
+    clip-path: polygon(12% 0, 100% 0, 88% 100%, 0 100%);
+    background: var(--surface-2);
+    color: var(--w60);
+    border: 1px solid var(--w15);
+    flex-shrink: 0;
+    transition: background 0.2s, color 0.2s;
 }
+.etapa-num-badge.etapa-isl-tenerife    { background: rgba(255,149,0,0.15);  border-color: rgba(255,149,0,0.4);  color: var(--amber);   }
+.etapa-num-badge.etapa-isl-grancanaria { background: rgba(225,6,0,0.15);    border-color: rgba(225,6,0,0.4);    color: var(--red-hot); }
+.etapa-num-badge.etapa-isl-lanzarote   { background: rgba(255,107,53,0.15); border-color: rgba(255,107,53,0.4); color: #FF6B35;        }
 
-.timeline-item:hover {
+/* Card */
+.etapa-card {
+    background: var(--surface-1);
+    border: 1px solid var(--w08);
+    border-left: 3px solid var(--w15);
+    overflow: hidden;
+    transition: transform 0.24s var(--ease), border-color 0.2s, box-shadow 0.24s;
+}
+.etapa-card.etapa-isl-tenerife    { border-left-color: var(--amber); }
+.etapa-card.etapa-isl-grancanaria { border-left-color: var(--red);   }
+.etapa-card.etapa-isl-lanzarote   { border-left-color: #FF6B35;      }
+.etapa-card:hover {
     transform: translateX(5px);
     border-color: var(--w15);
-    border-left-color: var(--red);
-    box-shadow: -4px 0 0 var(--red), 0 12px 40px rgba(0,0,0,0.4);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.4);
 }
 
-.tl-top {
+.etapa-card-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
+    padding: 20px 24px 12px;
     gap: 16px;
-    margin-bottom: 10px;
 }
-
-.tl-name {
+.etapa-stage-label {
+    display: block;
+    font-family: var(--f-data);
+    font-size: 0.6rem;
+    font-weight: 600;
+    color: var(--w35);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+}
+.etapa-name {
     font-family: var(--f-display);
-    font-size: 1.3rem;
-    font-weight: 800;
+    font-size: 1.6rem;
+    font-weight: 900;
     font-style: italic;
     color: var(--w100);
-    letter-spacing: 0.5px;
-    line-height: 1.1;
+    line-height: 1;
+    letter-spacing: 1px;
 }
-
-.tl-date {
+.etapa-date {
     font-family: var(--f-data);
-    font-size: 0.7rem;
+    font-size: 0.68rem;
     color: var(--w35);
     white-space: nowrap;
-    padding-top: 3px;
+    padding-top: 6px;
+    flex-shrink: 0;
 }
-
-.tl-desc {
+.etapa-desc {
     font-size: 0.875rem;
     color: var(--w60);
     line-height: 1.65;
-    margin-bottom: 14px;
+    padding: 0 24px 14px;
+}
+.etapa-card-footer {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 10px 24px;
+    border-top: 1px solid var(--w08);
+    background: var(--w04);
+    flex-wrap: wrap;
 }
 
-.tl-isla {
+/* Island badge */
+.etapa-isla-badge {
     display: inline-flex;
     align-items: center;
-    gap: 5px;
-    padding: 4px 12px;
-    background: rgba(0,132,61,0.1);
-    border: 1px solid rgba(0,132,61,0.3);
-    border-radius: 1px;
+    gap: 6px;
     font-family: var(--f-data);
-    font-size: 0.64rem;
-    color: #4CAF50;
+    font-size: 0.62rem;
+    font-weight: 600;
     letter-spacing: 2.5px;
     text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 1px;
+    border: 1px solid;
 }
+.etapa-isla-badge.etapa-isl-tenerife    { color: var(--amber);   border-color: rgba(255,149,0,0.35);  background: rgba(255,149,0,0.08);  }
+.etapa-isla-badge.etapa-isl-grancanaria { color: var(--red-hot); border-color: rgba(225,6,0,0.35);    background: rgba(225,6,0,0.08);    }
+.etapa-isla-badge.etapa-isl-lanzarote   { color: #FF6B35;        border-color: rgba(255,107,53,0.35); background: rgba(255,107,53,0.08); }
+.etapa-isla-badge.etapa-isl-default     { color: #4CAF50;        border-color: rgba(76,175,80,0.35);  background: rgba(76,175,80,0.08);  }
+.etapa-isla-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: currentColor;
+    flex-shrink: 0;
+}
+.etapa-stat {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 3px;
+    font-family: var(--f-data);
+    font-size: 0.65rem;
+    color: var(--w35);
+    letter-spacing: 0.5px;
+}
+.etapa-stat-val {
+    font-family: var(--f-display);
+    font-size: 1rem;
+    font-weight: 700;
+    font-style: italic;
+    color: var(--w85);
+}
+
+/* Tramos list */
+.etapa-tramos {
+    border-top: 1px solid var(--w08);
+    padding: 12px 24px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+.etapa-tramo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.etapa-tramo-dot {
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: var(--w35);
+    flex-shrink: 0;
+}
+.etapa-tramo-name {
+    font-family: var(--f-body);
+    font-size: 0.875rem;
+    color: var(--w60);
+    flex: 1;
+}
+.etapa-tramo-km {
+    font-family: var(--f-data);
+    font-size: 0.72rem;
+    color: var(--w35);
+    white-space: nowrap;
+}
+
+/* Island filter buttons */
+.etapa-filters {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+.etapa-flt {
+    padding: 6px 14px;
+    background: var(--surface-2);
+    border: 1px solid var(--w15);
+    border-radius: 2px;
+    color: var(--w35);
+    font-family: var(--f-data);
+    font-size: 0.62rem;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.etapa-flt:hover  { color: var(--w85); background: var(--surface-3); }
+.etapa-flt.active { color: var(--w100); background: var(--red); border-color: var(--red); }
 
 /* ================================================
    LOADING & EMPTY STATES
@@ -1086,7 +1332,7 @@ body {
    RESPONSIVE
    ================================================ */
 @media (max-width: 900px) {
-    .hero-inner   { padding: 22px 28px 0; }
+    .hero-inner   { padding: 22px 28px 0; min-height: 100svh; }
     .nav-inner    { padding: 0 24px; }
     .main         { padding: 36px 28px 72px; }
     .footer-inner { padding: 0 28px; }
@@ -1122,9 +1368,15 @@ body {
     .data-table th.th-dorsal { display: none; }
     .data-table td:first-child { display: none; }
 
-    .timeline      { padding-left: 32px; }
-    .timeline::before { left: 8px; }
-    .timeline-item::before { left: -32px; }
+    .etapa-item { grid-template-columns: 44px 1fr; gap: 0 10px; }
+    .etapa-item:not(:last-child)::before { left: 20px; }
+    .etapa-num-badge { width: 36px; height: 36px; font-size: 0.62rem; }
+    .etapa-name { font-size: 1.3rem; }
+    .etapa-card-header { padding: 14px 16px 10px; }
+    .etapa-desc { padding: 0 16px 10px; }
+    .etapa-card-footer { padding: 8px 16px; gap: 10px; }
+    .etapa-tramos { padding: 10px 16px 12px; }
+    .etapa-summary { padding: 12px 16px; }
 
     .sec-title   { font-size: 1.8rem; }
 
