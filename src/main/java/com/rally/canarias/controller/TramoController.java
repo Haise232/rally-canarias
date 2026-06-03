@@ -21,13 +21,13 @@ public class TramoController {
         this.tramoService = tramoService;
     }
 
-    // GET: Obtener lista completa
+
     @GetMapping
     public ResponseEntity<List<Tramo>> listarTodos() {
         return ResponseEntity.ok(tramoService.findAll());
     }
 
-    // GET: Obtener por ID
+
     @GetMapping("/{id}")
     public ResponseEntity<Tramo> obtenerPorId(@PathVariable Long id) {
         Optional<Tramo> tramo = tramoService.findById(id);
@@ -35,8 +35,7 @@ public class TramoController {
                     .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    // GET: Búsqueda con Query Params y Sort dinámico (Módulo B)
-    // Ejemplo de uso en Postman: /api/v1/tramos/buscar?nombre=curvas&sort=distanciaKm,desc
+
     @GetMapping("/buscar")
     public ResponseEntity<List<Tramo>> buscarPorNombre(
             @RequestParam String nombre, 
@@ -44,7 +43,6 @@ public class TramoController {
         return ResponseEntity.ok(tramoService.findByName(nombre, sort));
     }
 
-    // POST: Crear tramo
     @PostMapping
     public ResponseEntity<Tramo> crearTramo(@RequestBody Tramo tramo) {
         Tramo nuevoTramo = tramoService.save(tramo);
@@ -58,17 +56,20 @@ public class TramoController {
         
         if (tramoExistente.isPresent()) {
             Tramo tramoActualizado = tramoExistente.get();
+            
             tramoActualizado.setNombre(tramoDetalles.getNombre());
             tramoActualizado.setDistancia(tramoDetalles.getDistancia());
             tramoActualizado.setDificultad(tramoDetalles.getDificultad());
             tramoActualizado.setSuperficie(tramoDetalles.getSuperficie());
-            // Nota: Aquí también podrías actualizar la etapa vinculada si fuera necesario
+            tramoActualizado.setEtapa(tramoDetalles.getEtapa()); 
+            tramoActualizado.setPilotos(tramoDetalles.getPilotos());
             
             return ResponseEntity.ok(tramoService.save(tramoActualizado));
         } else {
             return ResponseEntity.notFound().build();
         }
-    }
+    } 
+    
 
 
     @DeleteMapping("/{id}")
