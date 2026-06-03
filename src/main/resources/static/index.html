@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rally Islas Canarias 2026</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <span class="logo-icon">🏎️</span>
+                <div class="logo-text">
+                    <h1>RALLY ISLAS CANARIAS</h1>
+                    <span class="edition">Gran Canaria Edition 2026</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navegación por Tabs -->
+    <nav class="tabs">
+        <button class="tab-btn active" data-tab="equipos">
+            <span class="tab-icon">🏁</span>
+            Equipos
+        </button>
+        <button class="tab-btn" data-tab="pilotos">
+            <span class="tab-icon">🏎️</span>
+            Pilotos
+        </button>
+        <button class="tab-btn" data-tab="etapas">
+            <span class="tab-icon">🗺️</span>
+            Etapas
+        </button>
+        <button class="tab-btn" data-tab="tramos">
+            <span class="tab-icon">🛣️</span>
+            Tramos
+        </button>
+    </nav>
+
+    <!-- Contenido Principal -->
+    <main class="main-content">
+        
+        <!-- Sección Equipos -->
+        <section id="equipos" class="section active">
+            <div class="section-header">
+                <h2>🏁 Equipos</h2>
+                <div class="search-bar">
+                    <input type="text" id="buscar-equipo" placeholder="Buscar equipo...">
+                    <button class="search-btn">🔍</button>
+                </div>
+            </div>
+            <div class="cards-grid" id="equipos-grid">
+                <!-- Las cards se cargan dinámicamente -->
+            </div>
+        </section>
+
+        <!-- Sección Pilotos -->
+        <section id="pilotos" class="section">
+            <div class="section-header">
+                <h2>🏎️ Pilotos</h2>
+                <div class="filters">
+                    <select id="filtro-categoria">
+                        <option value="">Todas las categorías</option>
+                        <option value="WRC">WRC</option>
+                        <option value="WRC2">WRC2</option>
+                        <option value="JWRC">JWRC</option>
+                    </select>
+                    <div class="search-bar">
+                        <input type="text" id="buscar-piloto" placeholder="Buscar piloto...">
+                        <button class="search-btn">🔍</button>
+                    </div>
+                </div>
+            </div>
+            <div class="table-container">
+                <table class="data-table" id="pilotos-table">
+                    <thead>
+                        <tr>
+                            <th>Dorsal</th>
+                            <th>Nombre</th>
+                            <th>País</th>
+                            <th>Categoría</th>
+                            <th>Equipo</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pilotos-tbody">
+                        <!-- Las filas se cargan dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Sección Etapas -->
+        <section id="etapas" class="section">
+            <div class="section-header">
+                <h2>🗺️ Etapas</h2>
+            </div>
+            <div class="timeline" id="etapas-timeline">
+                <!-- Las etapas se cargan dinámicamente -->
+            </div>
+        </section>
+
+        <!-- Sección Tramos -->
+        <section id="tramos" class="section">
+            <div class="section-header">
+                <h2>🛣️ Tramos</h2>
+            </div>
+            <div class="cards-grid" id="tramos-grid">
+                <!-- Los tramos se cargan dinámicamente -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <span>🏁 Rally Islas Canarias 2026</span>
+            <span class="separator">|</span>
+            <span>Gran Canaria Edition</span>
+        </div>
+    </footer>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
