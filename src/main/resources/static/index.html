@@ -5,123 +5,189 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rally Islas Canarias 2026</title>
     <link rel="stylesheet" href="css/styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;0,800;0,900;1,700;1,800;1,900&family=Barlow:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
-    <!-- Header -->
-    <header class="header">
-        <div class="header-content">
-            <div class="logo">
-                <span class="logo-icon">🏎️</span>
-                <div class="logo-text">
-                    <h1>RALLY ISLAS CANARIAS</h1>
-                    <span class="edition">Gran Canaria Edition 2026</span>
+
+    <!-- HERO HEADER -->
+    <header class="hero">
+        <div class="hero-bg">
+            <div class="hero-stripes"></div>
+            <div class="hero-glow"></div>
+        </div>
+        <div class="hero-inner">
+
+            <div class="hero-topbar">
+                <div class="hero-logo">
+                    <div class="logo-flag">
+                        <span class="ls ls-r"></span>
+                        <span class="ls ls-y"></span>
+                        <span class="ls ls-g"></span>
+                    </div>
+                    <span class="logo-abbr">RIC</span>
+                    <span class="logo-sep"></span>
+                    <span class="logo-full">Rally Islas Canarias</span>
+                </div>
+                <div class="hero-topbar-right">
+                    <span class="badge-fia">FIA Regional Rally</span>
+                    <span class="badge-live">
+                        <span class="live-dot"></span>
+                        EN VIVO
+                    </span>
                 </div>
             </div>
+
+            <div class="hero-main">
+                <p class="hero-eyebrow">GRAN CANARIA EDITION · TEMPORADA</p>
+                <h1 class="hero-title">
+                    <span class="ht-rally">RALLY</span>
+                    <span class="ht-canarias">ISLAS CANARIAS</span>
+                </h1>
+                <p class="hero-year">2026</p>
+            </div>
+
+            <div class="hero-statsbar">
+                <div class="hstat">
+                    <span class="hstat-val">7</span>
+                    <span class="hstat-lbl">Etapas</span>
+                </div>
+                <span class="hstat-div"></span>
+                <div class="hstat">
+                    <span class="hstat-val">120+</span>
+                    <span class="hstat-lbl">Pilotos</span>
+                </div>
+                <span class="hstat-div"></span>
+                <div class="hstat">
+                    <span class="hstat-val">350km</span>
+                    <span class="hstat-lbl">Tramos Especiales</span>
+                </div>
+                <span class="hstat-div"></span>
+                <div class="hstat">
+                    <span class="hstat-val">3</span>
+                    <span class="hstat-lbl">Islas</span>
+                </div>
+            </div>
+
         </div>
     </header>
 
-    <!-- Navegación por Tabs -->
-    <nav class="tabs">
-        <button class="tab-btn active" data-tab="equipos">
-            <span class="tab-icon">🏁</span>
-            Equipos
-        </button>
-        <button class="tab-btn" data-tab="pilotos">
-            <span class="tab-icon">🏎️</span>
-            Pilotos
-        </button>
-        <button class="tab-btn" data-tab="etapas">
-            <span class="tab-icon">🗺️</span>
-            Etapas
-        </button>
-        <button class="tab-btn" data-tab="tramos">
-            <span class="tab-icon">🛣️</span>
-            Tramos
-        </button>
+    <!-- STICKY NAVIGATION -->
+    <nav class="nav-tabs">
+        <div class="nav-inner">
+            <button class="ntab active" data-tab="equipos">
+                <span class="ntab-num">01</span>
+                <span class="ntab-lbl">Equipos</span>
+            </button>
+            <button class="ntab" data-tab="pilotos">
+                <span class="ntab-num">02</span>
+                <span class="ntab-lbl">Pilotos</span>
+            </button>
+            <button class="ntab" data-tab="etapas">
+                <span class="ntab-num">03</span>
+                <span class="ntab-lbl">Etapas</span>
+            </button>
+            <button class="ntab" data-tab="tramos">
+                <span class="ntab-num">04</span>
+                <span class="ntab-lbl">Tramos</span>
+            </button>
+            <div class="nav-line" id="nav-indicator"></div>
+        </div>
     </nav>
 
-    <!-- Contenido Principal -->
-    <main class="main-content">
-        
-        <!-- Sección Equipos -->
+    <!-- MAIN -->
+    <main class="main">
+
+        <!-- EQUIPOS -->
         <section id="equipos" class="section active">
-            <div class="section-header">
-                <h2>🏁 Equipos</h2>
-                <div class="search-bar">
-                    <input type="text" id="buscar-equipo" placeholder="Buscar equipo...">
-                    <button class="search-btn">🔍</button>
+            <div class="sec-head">
+                <div class="sec-title-group">
+                    <span class="sec-num">01</span>
+                    <h2 class="sec-title">EQUIPOS</h2>
+                </div>
+                <div class="sec-controls">
+                    <label class="search-field">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                        <input type="text" id="buscar-equipo" placeholder="Buscar equipo…">
+                    </label>
                 </div>
             </div>
-            <div class="cards-grid" id="equipos-grid">
-                <!-- Las cards se cargan dinámicamente -->
-            </div>
+            <div class="cards-grid" id="equipos-grid"></div>
         </section>
 
-        <!-- Sección Pilotos -->
+        <!-- PILOTOS -->
         <section id="pilotos" class="section">
-            <div class="section-header">
-                <h2>🏎️ Pilotos</h2>
-                <div class="filters">
-                    <select id="filtro-categoria">
+            <div class="sec-head">
+                <div class="sec-title-group">
+                    <span class="sec-num">02</span>
+                    <h2 class="sec-title">PILOTOS</h2>
+                </div>
+                <div class="sec-controls">
+                    <select id="filtro-categoria" class="sel-styled">
                         <option value="">Todas las categorías</option>
                         <option value="WRC">WRC</option>
                         <option value="WRC2">WRC2</option>
                         <option value="JWRC">JWRC</option>
                     </select>
-                    <div class="search-bar">
-                        <input type="text" id="buscar-piloto" placeholder="Buscar piloto...">
-                        <button class="search-btn">🔍</button>
-                    </div>
+                    <label class="search-field">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                        <input type="text" id="buscar-piloto" placeholder="Buscar piloto…">
+                    </label>
                 </div>
             </div>
-            <div class="table-container">
+            <div class="table-wrap">
                 <table class="data-table" id="pilotos-table">
                     <thead>
                         <tr>
-                            <th>Dorsal</th>
-                            <th>Nombre</th>
-                            <th>País</th>
+                            <th class="th-dorsal">#</th>
+                            <th>Piloto</th>
+                            <th>Nac.</th>
                             <th>Categoría</th>
                             <th>Equipo</th>
                             <th>Estado</th>
                         </tr>
                     </thead>
-                    <tbody id="pilotos-tbody">
-                        <!-- Las filas se cargan dinámicamente -->
-                    </tbody>
+                    <tbody id="pilotos-tbody"></tbody>
                 </table>
             </div>
         </section>
 
-        <!-- Sección Etapas -->
+        <!-- ETAPAS -->
         <section id="etapas" class="section">
-            <div class="section-header">
-                <h2>🗺️ Etapas</h2>
+            <div class="sec-head">
+                <div class="sec-title-group">
+                    <span class="sec-num">03</span>
+                    <h2 class="sec-title">ETAPAS</h2>
+                </div>
             </div>
-            <div class="timeline" id="etapas-timeline">
-                <!-- Las etapas se cargan dinámicamente -->
-            </div>
+            <div class="timeline" id="etapas-timeline"></div>
         </section>
 
-        <!-- Sección Tramos -->
+        <!-- TRAMOS -->
         <section id="tramos" class="section">
-            <div class="section-header">
-                <h2>🛣️ Tramos</h2>
+            <div class="sec-head">
+                <div class="sec-title-group">
+                    <span class="sec-num">04</span>
+                    <h2 class="sec-title">TRAMOS ESPECIALES</h2>
+                </div>
             </div>
-            <div class="cards-grid" id="tramos-grid">
-                <!-- Los tramos se cargan dinámicamente -->
-            </div>
+            <div class="cards-grid" id="tramos-grid"></div>
         </section>
 
     </main>
 
-    <!-- Footer -->
+    <!-- FOOTER -->
     <footer class="footer">
-        <div class="footer-content">
-            <span>🏁 Rally Islas Canarias 2026</span>
-            <span class="separator">|</span>
-            <span>Gran Canaria Edition</span>
+        <div class="footer-inner">
+            <div class="footer-brand">
+                <span class="footer-ric">RIC</span>
+                <div>
+                    <p class="footer-name">Rally Islas Canarias</p>
+                    <p class="footer-ed">Gran Canaria Edition 2026</p>
+                </div>
+            </div>
+            <p class="footer-copy">FIA Regional Rally Championship · Gran Canaria · Tenerife · Lanzarote</p>
         </div>
     </footer>
 
