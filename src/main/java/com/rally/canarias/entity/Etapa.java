@@ -11,7 +11,7 @@ import jakarta.persistence.Id;
 @Entity
 public class Etapa {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Long id;
     private String nombre;
     private String descripcion;
     private String fecha;
@@ -23,18 +23,18 @@ public class Etapa {
     public Etapa() {
     }
 
-    public Etapa(int id, String nombre, String descripcion, String fecha) {
+    public Etapa(Long id, String nombre, String descripcion, String fecha) {
         this.id = id;
         this.nombre = nombre;
         this.descripcion = descripcion;
         this.fecha = fecha;
     }
 
-    public int getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

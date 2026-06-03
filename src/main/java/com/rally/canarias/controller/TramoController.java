@@ -24,13 +24,13 @@ public class TramoController {
     // GET: Obtener lista completa
     @GetMapping
     public ResponseEntity<List<Tramo>> listarTodos() {
-        return ResponseEntity.ok(tramoService.obtenerTodos());
+        return ResponseEntity.ok(tramoService.findAll());
     }
 
     // GET: Obtener por ID
     @GetMapping("/{id}")
-    public ResponseEntity<Tramo> obtenerPorId(@PathVariable Integer id) {
-        Optional<Tramo> tramo = tramoService.obtenerPorId(id);
+    public ResponseEntity<Tramo> obtenerPorId(@PathVariable Long id) {
+        Optional<Tramo> tramo = tramoService.findById(id);
         return tramo.map(ResponseEntity::ok)
                     .orElseGet(() -> ResponseEntity.notFound().build());
     }
@@ -41,30 +41,30 @@ public class TramoController {
     public ResponseEntity<List<Tramo>> buscarPorNombre(
             @RequestParam String nombre, 
             Sort sort) { // Spring inyecta el sort automáticamente desde la URL
-        return ResponseEntity.ok(tramoService.buscarPorNombre(nombre, sort));
+        return ResponseEntity.ok(tramoService.findByName(nombre, sort));
     }
 
     // POST: Crear tramo
     @PostMapping
     public ResponseEntity<Tramo> crearTramo(@RequestBody Tramo tramo) {
-        Tramo nuevoTramo = tramoService.guardarTramo(tramo);
+        Tramo nuevoTramo = tramoService.save(tramo);
         return ResponseEntity.status(HttpStatus.CREATED).body(nuevoTramo);
     }
 
     // PUT: Actualizar tramo
     @PutMapping("/{id}")
-    public ResponseEntity<Tramo> actualizarTramo(@PathVariable Integer id, @RequestBody Tramo tramoDetalles) {
-        Optional<Tramo> tramoExistente = tramoService.obtenerPorId(id);
+    public ResponseEntity<Tramo> actualizarTramo(@PathVariable Long id, @RequestBody Tramo tramoDetalles) {
+        Optional<Tramo> tramoExistente = tramoService.findById(id);
         
         if (tramoExistente.isPresent()) {
             Tramo tramoActualizado = tramoExistente.get();
             tramoActualizado.setNombre(tramoDetalles.getNombre());
-            tramoActualizado.setDistanciaKm(tramoDetalles.getDistanciaKm());
+            tramoActualizado.setDistancia(tramoDetalles.getDistancia());
             tramoActualizado.setDificultad(tramoDetalles.getDificultad());
             tramoActualizado.setSuperficie(tramoDetalles.getSuperficie());
             // Nota: Aquí también podrías actualizar la etapa vinculada si fuera necesario
             
-            return ResponseEntity.ok(tramoService.guardarTramo(tramoActualizado));
+            return ResponseEntity.ok(tramoService.save(tramoActualizado));
         } else {
             return ResponseEntity.notFound().build();
         }
@@ -72,9 +72,9 @@ public class TramoController {
 
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminarTramo(@PathVariable Integer id) {
-        if (tramoService.obtenerPorId(id).isPresent()) {
-            tramoService.eliminarTramo(id);
+    public ResponseEntity<Void> eliminarTramo(@PathVariable Long id) {
+        if (tramoService.findById(id).isPresent()) {
+            tramoService.deleteById(id);
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.notFound().build();
@@ -82,15 +82,15 @@ public class TramoController {
 
 
     @PostMapping("/{tramoId}/pilotos/{pilotoId}")
-    public ResponseEntity<Tramo> inscribirPiloto(@PathVariable Integer tramoId, @PathVariable Integer pilotoId) {
+    public ResponseEntity<Tramo> inscribirPiloto(@PathVariable Long tramoId, @PathVariable Long pilotoId) {
         // Llamaremos al servicio cuando esté lista la entidad Piloto
-        Tramo tramoActualizado = tramoService.inscribirPiloto(tramoId, pilotoId);
+        Tramo tramoActualizado = tramoService.inscribirPilotoEnTramo(tramoId, pilotoId);
         return ResponseEntity.ok(tramoActualizado);
     }
 
     @DeleteMapping("/{tramoId}/pilotos/{pilotoId}")
-    public ResponseEntity<Void> desinscribirPiloto(@PathVariable Integer tramoId, @PathVariable Integer pilotoId) {
-        tramoService.desinscribirPiloto(tramoId, pilotoId);
+    public ResponseEntity<Void> desinscribirPiloto(@PathVariable Long tramoId, @PathVariable Long pilotoId) {
+        tramoService.desinscribirPilotoDeTramo(tramoId, pilotoId);
         return ResponseEntity.noContent().build();
     }
 }

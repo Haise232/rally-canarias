@@ -10,9 +10,9 @@ import org.springframework.stereotype.Repository;
 import com.rally.canarias.entity.Tramo;
 
 @Repository
-public interface TramoRepository extends JpaRepository<Tramo, Integer> {
+public interface TramoRepository extends JpaRepository<Tramo, Long> {
 
-    List<Tramo> findByEtapaId(int etapaId);
+    List<Tramo> findByEtapaId(Long etapaId);
 
     List<Tramo> findByNombreContainingIgnoreCase(org.springframework.data.domain.Sort sort, String nombre);
 
@@ -20,4 +20,4 @@ public interface TramoRepository extends JpaRepository<Tramo, Integer> {
 
     @Query("SELECT t FROM Tramo t JOIN t.pilotos p WHERE p.nacionalidad = :nacionalidad")
     List<Tramo> findTramosPorNacionalidad(@Param("nacionalidad") String nacionalidad);
-} 
+}

@@ -25,7 +25,7 @@ public class EtapaService {
         return etapaRepository.findAll();
     }
 
-    public Optional<Etapa> obtenerPorId(Integer id) {
+    public Optional<Etapa> obtenerPorId(Long id) {
         return etapaRepository.findById(id);
     }
 
@@ -33,7 +33,7 @@ public class EtapaService {
         return etapaRepository.save(etapa);
     }
 
-    public void eliminarEtapa(Integer id) {
+    public void eliminarEtapa(Long id) {
         etapaRepository.deleteById(id);
     }
 

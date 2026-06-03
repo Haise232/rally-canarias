@@ -7,15 +7,20 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Entity
 public class Tramo {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id; 
+    private Long id; 
     private String nombre;
-    private int distancia;
+    private Integer distancia;
 
     @Enumerated(EnumType.STRING)
     private Dificultad dificultad;
@@ -23,26 +28,40 @@ public class Tramo {
     @Enumerated(EnumType.STRING)
     private Isla isla;
 
+    @Enumerated(EnumType.STRING)
+    private Superficie superficie;
+
+    @ManyToMany
+    @JoinTable(
+        name = "tramo_piloto",
+        joinColumns = @JoinColumn(name = "tramo_id"),
+        inverseJoinColumns = @JoinColumn(name = "piloto_id")
+    )
+    @JsonIgnoreProperties({"equipo"})
+    private List<Piloto> pilotos = new ArrayList<>();
+
     @ManyToOne
-    @JoinColumn(name = "etapa_id", nullable = false) 
+    @JoinColumn(name = "etapa_id", nullable = false)
     private Etapa etapa;
 
     public Tramo() {
     }
 
-    public Tramo(int id, String nombre, int distancia, Dificultad dificultad, Isla isla) {
+    public Tramo(Long id, String nombre, Integer distancia, Dificultad dificultad, Isla isla, Superficie superficie, Etapa etapa) {
         this.id = id;
         this.nombre = nombre;
         this.distancia = distancia;
         this.dificultad = dificultad;
         this.isla = isla;
+        this.superficie = superficie;
+        this.etapa = etapa;
     }
 
-    public int getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -54,11 +73,11 @@ public class Tramo {
         this.nombre = nombre;
     }
 
-    public int getDistancia() {
+    public Integer getDistancia() {
         return distancia;
     }
 
-    public void setDistancia(int distancia) {
+    public void setDistancia(Integer distancia) {
         this.distancia = distancia;
     }
 
@@ -84,6 +103,22 @@ public class Tramo {
 
     public void setEtapa(Etapa etapa) {
         this.etapa = etapa;
+    }
+
+    public Superficie getSuperficie() {
+        return superficie;
+    }
+
+    public void setSuperficie(Superficie superficie) {
+        this.superficie = superficie;
+    }
+
+    public List<Piloto> getPilotos() {
+        return pilotos;
+    }
+
+    public void setPilotos(List<Piloto> pilotos) {
+        this.pilotos = pilotos;
     }
 
 }

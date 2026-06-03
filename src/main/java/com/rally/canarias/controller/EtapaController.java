@@ -26,7 +26,7 @@ public class EtapaController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Etapa> obtenerPorId(@PathVariable Integer id) {
+    public ResponseEntity<Etapa> obtenerPorId(@PathVariable Long id) {
         Optional<Etapa> etapa = etapaService.obtenerPorId(id);
         return etapa.map(ResponseEntity::ok)
                     .orElseGet(() -> ResponseEntity.notFound().build());
@@ -39,7 +39,7 @@ public class EtapaController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Etapa> actualizarEtapa(@PathVariable Integer id, @RequestBody Etapa etapaDetalles) {
+    public ResponseEntity<Etapa> actualizarEtapa(@PathVariable Long id, @RequestBody Etapa etapaDetalles) {
         Optional<Etapa> etapaExistente = etapaService.obtenerPorId(id);
         
         if (etapaExistente.isPresent()) {
@@ -57,7 +57,7 @@ public class EtapaController {
 
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminarEtapa(@PathVariable Integer id) {
+    public ResponseEntity<Void> eliminarEtapa(@PathVariable Long id) {
         if (etapaService.obtenerPorId(id).isPresent()) {
             etapaService.eliminarEtapa(id);
             return ResponseEntity.noContent().build();

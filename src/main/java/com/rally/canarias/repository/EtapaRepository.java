@@ -10,7 +10,7 @@ import com.rally.canarias.entity.Etapa;
 import com.rally.canarias.entity.Isla;
 
 @Repository
-public interface EtapaRepository extends JpaRepository<Etapa, Integer> {
+public interface EtapaRepository extends JpaRepository<Etapa, Long> {
     
     // Spring genera el SQL automáticamente basándose en el nombre del método
     List<Etapa> findByIsla(Isla isla);
