@@ -1,145 +1,248 @@
-# Rally Canarias API
-
-REST API para la gestión de un rally automovilístico en las Islas Canarias. Permite administrar etapas, tramos, pilotos y equipos, con autenticación por API Key y despliegue en la nube.
-
-## Tecnologías
-
-| Capa | Tecnología |
-|---|---|
-| Lenguaje | Java 17 |
-| Framework | Spring Boot 3.4.6 |
-| Persistencia | Spring Data JPA + Hibernate |
-| Base de datos (prod) | PostgreSQL (Neon) |
-| Base de datos (test) | H2 (en memoria) |
-| Seguridad | Spring Security + API Key Filter |
-| Contenerización | Docker (multi-stage build) |
-| Despliegue | Render |
-
-## Modelo de dominio
+<div align="center">
 
 ```
-Equipo (1) ──────────── (N) Piloto
-                              │
-                        (N)   │   (N)
-                           Tramo ──── tramo_piloto (join table)
-                              │
-                        (N)   │   (1)
-                           Etapa
+██████╗  █████╗ ██╗     ██╗  ██╗   ██╗
+██╔══██╗██╔══██╗██║     ██║  ╚██╗ ██╔╝
+██████╔╝███████║██║     ██║   ╚████╔╝
+██╔══██╗██╔══██║██║     ██║    ╚██╔╝
+██║  ██║██║  ██║███████╗███████╗██║
+╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝╚══════╝╚═╝
+ ISLAS CANARIAS 2026 — REST API
 ```
 
-### Entidades
+**API REST para la gestión del Rally Islas Canarias 2026**  
+Etapas · Tramos · Pilotos · Equipos
 
-- **Equipo** — nombre, nacionalidad, marca, año de fundación
-- **Piloto** — nombre, dorsal (único), nacionalidad, categoría, activo/inactivo, equipo
-- **Etapa** — nombre, descripción, fecha, isla (`Isla` enum)
-- **Tramo** — nombre, distancia (km), dificultad, superficie, isla, etapa, pilotos inscritos
+---
 
-### Enumeraciones
+![Java](https://img.shields.io/badge/Java-17-ED8B00?style=flat-square&logo=openjdk&logoColor=white)
+![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.4.6-6DB33F?style=flat-square&logo=springboot&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Neon-4169E1?style=flat-square&logo=postgresql&logoColor=white)
+![Spring Security](https://img.shields.io/badge/Spring_Security-API_Key-6DB33F?style=flat-square&logo=springsecurity&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-Multi--stage-2496ED?style=flat-square&logo=docker&logoColor=white)
+![Render](https://img.shields.io/badge/Deploy-Render-46E3B7?style=flat-square&logo=render&logoColor=white)
 
-| Enum | Valores |
-|---|---|
-| `Isla` | `GRAN_CANARIA`, `TENERIFE`, `LA_PALMA`, `LA_GOMERA`, `EL_HIERRO`, `FUERTEVENTURA`, `LANZAROTE` |
-| `Dificultad` | `FACIL`, `MEDIA`, `DIFICIL` |
-| `Superficie` | `Tierra`, `Asfalto`, `Hierba`, `Barro`, `Nieve`, `Hielo`, `Arena` |
+</div>
 
-## Endpoints de la API
+---
 
-Todas las rutas de escritura (`POST`, `PUT`, `DELETE`) requieren el header `X-API-Key`.
-
-### Equipos — `/api/equipos`
-
-| Método | Ruta | Descripción |
-|---|---|---|
-| `GET` | `/api/equipos` | Listar todos los equipos |
-| `GET` | `/api/equipos/{id}` | Obtener equipo por ID |
-| `GET` | `/api/equipos/buscar?nombre=` | Buscar por nombre (parcial) |
-| `GET` | `/api/equipos/nacionalidad?nacionalidad=` | Filtrar por nacionalidad |
-| `GET` | `/api/equipos/{id}/pilotos/count` | Contar pilotos de un equipo |
-| `POST` | `/api/equipos` | Crear equipo |
-| `PUT` | `/api/equipos/{id}` | Actualizar equipo |
-| `DELETE` | `/api/equipos/{id}` | Eliminar equipo |
-
-### Pilotos — `/api/pilotos`
-
-| Método | Ruta | Descripción |
-|---|---|---|
-| `GET` | `/api/pilotos` | Listar todos los pilotos |
-| `GET` | `/api/pilotos/{id}` | Obtener piloto por ID |
-| `GET` | `/api/pilotos/equipo/{equipoId}` | Pilotos de un equipo |
-| `GET` | `/api/pilotos/activos` | Pilotos activos |
-| `GET` | `/api/pilotos/buscar?nombre=&sort=&direction=` | Buscar por nombre con ordenación |
-| `POST` | `/api/pilotos` | Crear piloto |
-| `PUT` | `/api/pilotos/{id}` | Actualizar piloto |
-| `DELETE` | `/api/pilotos/{id}` | Eliminar piloto |
-
-### Etapas — `/api/v1/etapas`
-
-| Método | Ruta | Descripción |
-|---|---|---|
-| `GET` | `/api/v1/etapas` | Listar todas las etapas |
-| `GET` | `/api/v1/etapas/{id}` | Obtener etapa por ID |
-| `POST` | `/api/v1/etapas` | Crear etapa |
-| `PUT` | `/api/v1/etapas/{id}` | Actualizar etapa |
-| `DELETE` | `/api/v1/etapas/{id}` | Eliminar etapa |
-
-### Tramos — `/api/v1/tramos`
-
-| Método | Ruta | Descripción |
-|---|---|---|
-| `GET` | `/api/v1/tramos` | Listar todos los tramos |
-| `GET` | `/api/v1/tramos/{id}` | Obtener tramo por ID |
-| `GET` | `/api/v1/tramos/buscar?nombre=` | Buscar por nombre |
-| `POST` | `/api/v1/tramos` | Crear tramo |
-| `PUT` | `/api/v1/tramos/{id}` | Actualizar tramo |
-| `DELETE` | `/api/v1/tramos/{id}` | Eliminar tramo |
-| `POST` | `/api/v1/tramos/{tramoId}/pilotos/{pilotoId}` | Inscribir piloto en tramo |
-| `DELETE` | `/api/v1/tramos/{tramoId}/pilotos/{pilotoId}` | Desinscribir piloto de tramo |
-
-## Autenticación
-
-La API utiliza autenticación por API Key. Las peticiones de lectura (`GET`) son públicas. Las operaciones de escritura requieren el header:
+## 📐 Arquitectura
 
 ```
-X-API-Key: <tu-api-key>
+┌─────────────────────────────────────────────────────────┐
+│                    CLIENTE (HTTP)                        │
+│              Postman · Browser · Frontend                │
+└──────────────────────────┬──────────────────────────────┘
+                           │  GET (público) / POST·PUT·DELETE (X-API-Key)
+┌──────────────────────────▼──────────────────────────────┐
+│              SPRING SECURITY — ApiKeyFilter              │
+└──────────────────────────┬──────────────────────────────┘
+                           │
+        ┌──────────────────┼──────────────────┐
+        ▼                  ▼                  ▼
+  EquipoController   PilotoController   EtapaController
+  TramoController    ─────────────────────────────────
+        │                  │                  │
+        ▼                  ▼                  ▼
+  EquipoService      PilotoService      EtapaService
+  TramoService       ─────────────────────────────────
+        │                  │                  │
+        ▼                  ▼                  ▼
+  EquipoRepository   PilotoRepository   EtapaRepository
+  TramoRepository    ─ Spring Data JPA ────────────────
+        │                  │                  │
+        └──────────────────▼──────────────────┘
+                   PostgreSQL (Neon)
 ```
 
-La clave se configura mediante la variable de entorno `API_KEY`.
+---
 
-## Ejecución local
+## 🗂️ Modelo de dominio
 
-### Prerequisitos
-
-- Java 17+
-- Maven 3.8+ (o usar el wrapper incluido `./mvnw`)
-- PostgreSQL o Docker
-
-### Variables de entorno
-
-Crea un archivo `.env` o configura las siguientes variables:
-
-```env
-PORT=8080
-SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/rally_canarias
-SPRING_DATASOURCE_USERNAME=tu_usuario
-SPRING_DATASOURCE_PASSWORD=tu_contraseña
-API_KEY=tu_clave_secreta
+```
+┌──────────────────┐        ┌──────────────────────────────┐
+│     EQUIPO       │        │           PILOTO              │
+├──────────────────┤  1   N ├──────────────────────────────┤
+│ id               │◄───────│ id                           │
+│ nombre           │        │ nombre                       │
+│ nacionalidad     │        │ dorsal  (UNIQUE)             │
+│ marca            │        │ nacionalidad                 │
+│ anioFundacion    │        │ categoria                    │
+└──────────────────┘        │ activo  (Boolean)            │
+                            │ equipo_id  FK ───────────────┘
+                            └──────────────┬───────────────
+                                           │ N
+                                    tramo_piloto
+                                      (join table)
+                                           │ N
+                            ┌──────────────▼───────────────┐
+                            │           TRAMO              │
+                            ├──────────────────────────────┤
+                            │ id                           │
+                            │ nombre                       │
+                            │ distanciaKm  NUMERIC(6,2)    │
+                            │ dificultad   Enum            │
+                            │ superficie   Enum            │
+                            │ isla         Enum            │
+                            │ etapa_id  FK ────────────────┐
+                            └──────────────────────────────┘
+                                                           │ N·1
+                            ┌──────────────────────────────▼──┐
+                            │            ETAPA                │
+                            ├─────────────────────────────────┤
+                            │ id                              │
+                            │ nombre                          │
+                            │ descripcion                     │
+                            │ fecha                           │
+                            │ isla  Enum                      │
+                            └─────────────────────────────────┘
 ```
 
-### Arrancar con Maven
+---
+
+## 🛠️ Stack tecnológico
+
+| Capa | Tecnología | Detalle |
+|------|------------|---------|
+| 🟠 Lenguaje | **Java 17** | LTS · Records · Sealed classes |
+| 🟢 Framework | **Spring Boot 3.4.6** | Auto-config · Embedded Tomcat |
+| 🗄️ Persistencia | **Spring Data JPA + Hibernate 6** | `ddl-auto=update` · `show-sql=true` |
+| 🐘 Base de datos prod | **PostgreSQL 17** (Neon cloud) | Serverless · Connection pooling |
+| 💾 Base de datos test | **H2** | En memoria · Levanta sin config |
+| 🔒 Seguridad | **Spring Security 6 + ApiKeyFilter** | Stateless · GET público · escritura protegida |
+| 🌐 Frontend | **HTML + Vanilla JS** | `static/` · Fetch API · Sin dependencias |
+| 🐳 Contenedores | **Docker** (multi-stage build) | JDK build → JRE runtime |
+| ☁️ Deploy | **Render** | Auto-deploy desde GitHub |
+
+---
+
+## 🔌 Endpoints de la API
+
+> **Autenticación:** Los `GET` son públicos. `POST`, `PUT` y `DELETE` requieren el header:
+> ```
+> X-API-Key: <tu-api-key>
+> ```
+
+<details>
+<summary><b>🏎️ Equipos</b> — <code>/api/equipos</code></summary>
+
+| Método | Ruta | Descripción | Auth |
+|--------|------|-------------|------|
+| `GET` | `/api/equipos` | Listar todos los equipos | — |
+| `GET` | `/api/equipos/{id}` | Obtener equipo por ID → `404` si no existe | — |
+| `GET` | `/api/equipos/buscar?nombre=` | Buscar por nombre (parcial, sin parámetro = todos) | — |
+| `GET` | `/api/equipos/nacionalidad?nacionalidad=` | Filtrar por nacionalidad | — |
+| `GET` | `/api/equipos/{id}/pilotos/count` | Número de pilotos del equipo | — |
+| `POST` | `/api/equipos` | Crear equipo | 🔑 |
+| `PUT` | `/api/equipos/{id}` | Actualizar equipo → `404` si no existe | 🔑 |
+| `DELETE` | `/api/equipos/{id}` | Eliminar equipo → `204` / `404` | 🔑 |
+
+</details>
+
+<details>
+<summary><b>👤 Pilotos</b> — <code>/api/pilotos</code></summary>
+
+| Método | Ruta | Descripción | Auth |
+|--------|------|-------------|------|
+| `GET` | `/api/pilotos` | Listar todos los pilotos | — |
+| `GET` | `/api/pilotos/{id}` | Obtener piloto por ID → `404` si no existe | — |
+| `GET` | `/api/pilotos/equipo/{equipoId}` | Pilotos de un equipo | — |
+| `GET` | `/api/pilotos/activos` | Pilotos con `activo = true` | — |
+| `GET` | `/api/pilotos/buscar?nombre=&sort=&direction=` | Buscar por nombre con ordenación dinámica | — |
+| `POST` | `/api/pilotos` | Crear piloto | 🔑 |
+| `PUT` | `/api/pilotos/{id}` | Actualizar piloto | 🔑 |
+| `DELETE` | `/api/pilotos/{id}` | Eliminar piloto → `204` / `404` | 🔑 |
+
+</details>
+
+<details>
+<summary><b>🗺️ Etapas</b> — <code>/api/etapas</code></summary>
+
+| Método | Ruta | Descripción | Auth |
+|--------|------|-------------|------|
+| `GET` | `/api/etapas` | Listar todas las etapas | — |
+| `GET` | `/api/etapas/{id}` | Obtener etapa por ID → `404` si no existe | — |
+| `POST` | `/api/etapas` | Crear etapa | 🔑 |
+| `PUT` | `/api/etapas/{id}` | Actualizar etapa | 🔑 |
+| `DELETE` | `/api/etapas/{id}` | Eliminar etapa → `204` / `404` | 🔑 |
+
+</details>
+
+<details>
+<summary><b>🛣️ Tramos</b> — <code>/api/tramos</code></summary>
+
+| Método | Ruta | Descripción | Auth |
+|--------|------|-------------|------|
+| `GET` | `/api/tramos` | Listar todos los tramos | — |
+| `GET` | `/api/tramos/{id}` | Obtener tramo por ID → `404` si no existe | — |
+| `GET` | `/api/tramos/buscar?nombre=` | Buscar por nombre (sin parámetro = todos) | — |
+| `POST` | `/api/tramos` | Crear tramo | 🔑 |
+| `PUT` | `/api/tramos/{id}` | Actualizar tramo | 🔑 |
+| `DELETE` | `/api/tramos/{id}` | Eliminar tramo → `204` / `404` | 🔑 |
+| `POST` | `/api/tramos/{tramoId}/pilotos/{pilotoId}` | Inscribir piloto en tramo | 🔑 |
+| `DELETE` | `/api/tramos/{tramoId}/pilotos/{pilotoId}` | Desinscribir piloto de tramo | 🔑 |
+
+</details>
+
+---
+
+## 🚀 Ejecución local
+
+### Requisitos
+
+- **Java 17+**
+- **Maven 3.8+** (o el wrapper `./mvnw` incluido)
+- **PostgreSQL** local o acceso a una instancia cloud (Neon, Supabase, etc.)
+
+### 1 · Clonar y configurar
+
+```bash
+git clone https://github.com/Haise232/rally-canarias.git
+cd rally-canarias
+```
+
+Edita `src/main/resources/application.properties` con tus credenciales:
+
+```properties
+spring.datasource.url=jdbc:postgresql://localhost:5432/rally_canarias
+spring.datasource.username=tu_usuario
+spring.datasource.password=tu_contraseña
+api.key=tu_clave_secreta
+```
+
+### 2 · Arrancar
 
 ```bash
 ./mvnw spring-boot:run
 ```
 
-### Arrancar con Docker
+La API levanta en **`http://localhost:8080`**  
+El frontend está disponible en **`http://localhost:8080/index.html`**
+
+### 3 · Probar con Postman
+
+```
+# Lectura — sin autenticación
+GET http://localhost:8080/api/tramos
+
+# Escritura — con API Key
+POST http://localhost:8080/api/equipos
+Header: X-API-Key: tu_clave_secreta
+Body (JSON):
+{
+  "nombre": "Canarias Motor Sport",
+  "nacionalidad": "ES",
+  "marca": "Hyundai",
+  "anioFundacion": 2018
+}
+```
+
+### 🐳 Alternativa: Docker
 
 ```bash
-# Construir imagen
 docker build -t rally-canarias .
 
-# Ejecutar contenedor
 docker run -p 8080:8080 \
-  -e PORT=8080 \
   -e SPRING_DATASOURCE_URL=jdbc:postgresql://host.docker.internal:5432/rally_canarias \
   -e SPRING_DATASOURCE_USERNAME=tu_usuario \
   -e SPRING_DATASOURCE_PASSWORD=tu_contraseña \
@@ -147,67 +250,134 @@ docker run -p 8080:8080 \
   rally-canarias
 ```
 
-La API estará disponible en `http://localhost:8080`.
+---
 
-## Tests
+## 🔒 Seguridad
+
+La autenticación funciona mediante un **filtro personalizado** (`ApiKeyFilter`) que extiende `OncePerRequestFilter`:
+
+```
+Petición entrante
+       │
+       ▼
+  ¿Método GET?  ──── Sí ──▶  bypassa el filtro → Spring Security: permitAll()
+       │
+       No
+       │
+       ▼
+  Lee header X-API-Key
+       │
+  ┌────┴────┐
+  │  ¿Key   │
+  │ válida? │
+  └────┬────┘
+       │ Sí                   No
+       ▼                       ▼
+  Setea autenticación    HTTP 401
+  en SecurityContext     {"error": "API Key inválida o ausente"}
+       │
+       ▼
+  Continúa la cadena → Controller
+```
+
+---
+
+## 📦 Estructura del proyecto
+
+```
+rally-canarias/
+├── src/
+│   ├── main/
+│   │   ├── java/com/rally/canarias/
+│   │   │   ├── CanariasApplication.java
+│   │   │   ├── controller/          ← @RestController · rutas HTTP
+│   │   │   │   ├── EquipoController.java
+│   │   │   │   ├── PilotoController.java
+│   │   │   │   ├── EtapaController.java
+│   │   │   │   └── TramoController.java
+│   │   │   ├── service/             ← @Service · lógica de negocio
+│   │   │   │   ├── EquipoService.java
+│   │   │   │   ├── PilotoService.java
+│   │   │   │   ├── EtapaService.java
+│   │   │   │   └── TramoService.java
+│   │   │   ├── repository/          ← JpaRepository · acceso a datos
+│   │   │   │   ├── EquipoRepository.java
+│   │   │   │   ├── PilotoRepository.java
+│   │   │   │   ├── EtapaRepository.java
+│   │   │   │   └── TramoRepository.java
+│   │   │   ├── entity/              ← @Entity · modelo JPA
+│   │   │   │   ├── Equipo.java
+│   │   │   │   ├── Piloto.java
+│   │   │   │   ├── Etapa.java
+│   │   │   │   ├── Tramo.java
+│   │   │   │   ├── Isla.java        (enum)
+│   │   │   │   ├── Dificultad.java  (enum)
+│   │   │   │   ├── Superficie.java  (enum)
+│   │   │   │   ├── IslaConverter.java
+│   │   │   │   ├── DificultadConverter.java
+│   │   │   │   └── SuperficieConverter.java
+│   │   │   ├── security/            ← Spring Security
+│   │   │   │   ├── SecurityConfig.java
+│   │   │   │   └── ApiKeyFilter.java
+│   │   │   └── exception/
+│   │   │       └── GlobalExceptionHandler.java  ← @RestControllerAdvice
+│   │   └── resources/
+│   │       ├── application.properties
+│   │       └── static/              ← Frontend (HTML + CSS + JS)
+│   │           ├── index.html
+│   │           ├── css/styles.css
+│   │           └── js/app.js
+├── Dockerfile
+├── pom.xml
+└── README.md
+```
+
+---
+
+## 🧪 Tests
 
 ```bash
 ./mvnw test
 ```
 
-Los tests usan H2 en memoria, no requieren una instancia de PostgreSQL.
+> Los tests usan H2 en memoria — no requieren PostgreSQL instalado.
 
-## Despliegue en Render
+---
 
-El proyecto está configurado para desplegarse en [Render](https://render.com):
+## ☁️ Despliegue en Render
 
-1. Conectar el repositorio en Render como **Web Service**.
-2. Seleccionar **Docker** como entorno de ejecución.
-3. Configurar las siguientes variables de entorno en el dashboard de Render:
+1. Conectar el repositorio en [render.com](https://render.com) como **Web Service**
+2. Seleccionar **Docker** como entorno de ejecución
+3. Configurar variables de entorno:
 
 | Variable | Descripción |
-|---|---|
-| `DATABASE_URL` | URL de conexión a Neon PostgreSQL |
-| `SPRING_DATASOURCE_USERNAME` | Usuario de base de datos |
-| `SPRING_DATASOURCE_PASSWORD` | Contraseña de base de datos |
+|----------|-------------|
+| `SPRING_DATASOURCE_URL` | `jdbc:postgresql://<host>/neondb?sslmode=require` |
+| `SPRING_DATASOURCE_USERNAME` | Usuario de PostgreSQL |
+| `SPRING_DATASOURCE_PASSWORD` | Contraseña de PostgreSQL |
 | `API_KEY` | Clave de autenticación de la API |
 
-Render asigna automáticamente la variable `PORT`, que la aplicación y el Dockerfile ya consumen.
+> `PORT` es asignada automáticamente por Render y la aplicación la consume con `${PORT:8080}`.
 
-## Estructura del proyecto
+---
 
-```
-src/main/java/com/rally/canarias/
-├── CanariasApplication.java
-├── controller/
-│   ├── EquipoController.java
-│   ├── PilotoController.java
-│   ├── EtapaController.java
-│   └── TramoController.java
-├── service/
-│   ├── EquipoService.java
-│   ├── PilotoService.java
-│   ├── EtapaService.java
-│   └── TramoService.java
-├── repository/
-│   ├── EquipoRepository.java
-│   ├── PilotoRepository.java
-│   ├── EtapaRepository.java
-│   └── TramoRepository.java
-├── entity/
-│   ├── Equipo.java
-│   ├── Piloto.java
-│   ├── Etapa.java
-│   ├── Tramo.java
-│   ├── Isla.java
-│   ├── Dificultad.java
-│   └── Superficie.java
-└── security/
-    ├── SecurityConfig.java
-    └── ApiKeyFilter.java
-```
+## 👥 Autores
 
-## Autores
+<table>
+<tr>
+<td align="center">
+<b>Izel Correa Baena</b><br>
+<a href="https://github.com/IzelCorreaBaena">@IzelCorreaBaena</a>
+</td>
+<td align="center">
+<b>Joaquín José</b><br>
+<a href="https://github.com/Haise232">@Haise232</a>
+</td>
+</tr>
+</table>
 
-- **Izel Correa Baena** — [@IzelCorreaBaena](https://github.com/IzelCorreaBaena)
-- **Haise232** — [@Haise232](https://github.com/Haise232)
+---
+
+<div align="center">
+<sub>Rally Islas Canarias 2026 · UT6 Actividad de Evaluación Final · DAM</sub>
+</div>
