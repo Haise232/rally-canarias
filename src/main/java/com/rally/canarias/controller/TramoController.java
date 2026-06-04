@@ -12,7 +12,7 @@ import com.rally.canarias.entity.Tramo;
 import com.rally.canarias.service.TramoService;
 
 @RestController
-@RequestMapping("/api/v1/tramos")
+@RequestMapping("/api/tramos")
 public class TramoController {
 
     private final TramoService tramoService;
@@ -38,8 +38,11 @@ public class TramoController {
 
     @GetMapping("/buscar")
     public ResponseEntity<List<Tramo>> buscarPorNombre(
-            @RequestParam String nombre, 
-            Sort sort) { // Spring inyecta el sort automáticamente desde la URL
+            @RequestParam(required = false) String nombre,
+            Sort sort) {
+        if (nombre == null || nombre.isBlank()) {
+            return ResponseEntity.ok(tramoService.findAll());
+        }
         return ResponseEntity.ok(tramoService.findByName(nombre, sort));
     }
 
@@ -58,7 +61,7 @@ public class TramoController {
             Tramo tramoActualizado = tramoExistente.get();
             
             tramoActualizado.setNombre(tramoDetalles.getNombre());
-            tramoActualizado.setDistancia(tramoDetalles.getDistancia());
+            tramoActualizado.setDistanciaKm(tramoDetalles.getDistanciaKm());
             tramoActualizado.setDificultad(tramoDetalles.getDificultad());
             tramoActualizado.setSuperficie(tramoDetalles.getSuperficie());
             tramoActualizado.setEtapa(tramoDetalles.getEtapa()); 

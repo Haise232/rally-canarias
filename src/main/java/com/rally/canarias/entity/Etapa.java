@@ -1,14 +1,15 @@
 package com.rally.canarias.entity;
 
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.EnumType;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 
 @Entity
+@Table(name = "etapas")
 public class Etapa {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -16,7 +17,7 @@ public class Etapa {
     private String descripcion;
     private String fecha;
 
-    @Enumerated(EnumType.STRING)
+    @Convert(converter = IslaConverter.class)
     private Isla isla;
 
 

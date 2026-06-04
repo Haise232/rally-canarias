@@ -1,8 +1,7 @@
 package com.rally.canarias.entity;
 
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -10,28 +9,30 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.ArrayList;
 import java.util.List;
 
 
 @Entity
+@Table(name = "tramos")
 public class Tramo {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id; 
     private String nombre;
-    private Integer distancia;
+    private Double distanciaKm;
 
-    @Enumerated(EnumType.STRING)
+    @Convert(converter = DificultadConverter.class)
     private Dificultad dificultad;
 
-    @Enumerated(EnumType.STRING)
+    @Convert(converter = IslaConverter.class)
     private Isla isla;
 
-    @Enumerated(EnumType.STRING)
+    @Convert(converter = SuperficieConverter.class)
     private Superficie superficie;
 
-    @ManyToMany
+    @ManyToMany(fetch = jakarta.persistence.FetchType.EAGER)
     @JoinTable(
         name = "tramo_piloto",
         joinColumns = @JoinColumn(name = "tramo_id"),
@@ -47,10 +48,10 @@ public class Tramo {
     public Tramo() {
     }
 
-    public Tramo(Long id, String nombre, Integer distancia, Dificultad dificultad, Isla isla, Superficie superficie, Etapa etapa) {
+    public Tramo(Long id, String nombre, Double distanciaKm, Dificultad dificultad, Isla isla, Superficie superficie, Etapa etapa) {
         this.id = id;
         this.nombre = nombre;
-        this.distancia = distancia;
+        this.distanciaKm = distanciaKm;
         this.dificultad = dificultad;
         this.isla = isla;
         this.superficie = superficie;
@@ -73,12 +74,12 @@ public class Tramo {
         this.nombre = nombre;
     }
 
-    public Integer getDistancia() {
-        return distancia;
+    public Double getDistanciaKm() {
+        return distanciaKm;
     }
 
-    public void setDistancia(Integer distancia) {
-        this.distancia = distancia;
+    public void setDistanciaKm(Double distanciaKm) {
+        this.distanciaKm = distanciaKm;
     }
 
     public Dificultad getDificultad() {

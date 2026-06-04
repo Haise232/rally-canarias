@@ -14,37 +14,36 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-
 @Component
 public class ApiKeyFilter extends OncePerRequestFilter {
-    
-    @Value("${app.api.key}")
+
+    @Value("${api.key}")
     private String apiKey;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        String requestApiKey = request.getHeader("X-API-KEY");
+        String requestApiKey = request.getHeader("X-API-Key");
         if (apiKey.equals(requestApiKey)) {
-            // Si la API key es válida, autenticamos al usuario con un rol genérico
             UsernamePasswordAuthenticationToken authentication =
                     new UsernamePasswordAuthenticationToken("apiUser", null, Collections.emptyList());
             SecurityContextHolder.getContext().setAuthentication(authentication);
+            filterChain.doFilter(request, response);
         } else {
-            // Si la API key no es válida, respondemos con 401 Unauthorized
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            return;
+            response.setContentType("application/json");
+            response.getWriter().write("{\"error\": \"API Key inválida o ausente\"}");
         }
-        filterChain.doFilter(request, response);
     }
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-      return request.getMethod().equals("GET") ||
-             request.getServletPath().startsWith("/css/") ||
-             request.getServletPath().startsWith("/js/") ||
-             request.getServletPath().startsWith("/assets/") ||
-             request.getServletPath().equals("/") ||
-             request.getServletPath().equals("/index.html");
-  }
+        String path = request.getServletPath();
+        return request.getMethod().equals("GET") ||
+               path.startsWith("/css/") ||
+               path.startsWith("/js/") ||
+               path.startsWith("/assets/") ||
+               path.equals("/") ||
+               path.equals("/index.html");
+    }
 }

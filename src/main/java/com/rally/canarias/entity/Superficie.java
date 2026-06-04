@@ -8,4 +8,6 @@ public enum Superficie {
     Nieve,
     Hielo,
     Arena,
+    Grava,
+    Mixta
 }

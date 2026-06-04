@@ -341,40 +341,74 @@ function renderTramos(tramos) {
     const grid = document.getElementById('tramos-grid');
     if (!tramos?.length) { empty(grid, '🛣️', 'Sin tramos registrados'); return; }
 
-    grid.innerHTML = tramos.map(t => {
-        const dif = (t.dificultad || 'MEDIA').toLowerCase();
+    const totalKm  = tramos.reduce((s, t) => s + (t.distanciaKm || 0), 0);
+    const maxKm    = Math.max(...tramos.map(t => t.distanciaKm || 0));
+    const altas    = tramos.filter(t => ['alta','dificil'].includes((t.dificultad||'').toLowerCase())).length;
+    const medias   = tramos.filter(t => (t.dificultad||'').toLowerCase() === 'media').length;
+    const bajas    = tramos.length - altas - medias;
+
+    function difClass(d) {
+        const v = (d||'').toLowerCase();
+        if (v==='alta'||v==='dificil') return 'alta';
+        if (v==='baja'||v==='facil')   return 'baja';
+        return 'media';
+    }
+
+    const statsHtml = `
+    <div class="ts-stats">
+        <div class="ts-stat"><span class="ts-stat-v">${tramos.length}</span><span class="ts-stat-l">Tramos</span></div>
+        <div class="ts-sep"></div>
+        <div class="ts-stat"><span class="ts-stat-v">${totalKm.toFixed(1)}</span><span class="ts-stat-l">km totales</span></div>
+        <div class="ts-sep"></div>
+        <div class="ts-stat"><span class="ts-stat-v">${(totalKm/tramos.length).toFixed(1)}</span><span class="ts-stat-l">km promedio</span></div>
+        <div class="ts-sep"></div>
+        <div class="ts-stat"><span class="ts-stat-v ts-v-alta">${altas}</span><span class="ts-stat-l">Alta</span></div>
+        <div class="ts-sep"></div>
+        <div class="ts-stat"><span class="ts-stat-v ts-v-media">${medias}</span><span class="ts-stat-l">Media</span></div>
+        <div class="ts-sep"></div>
+        <div class="ts-stat"><span class="ts-stat-v ts-v-baja">${bajas}</span><span class="ts-stat-l">Baja</span></div>
+    </div>`;
+
+    const filterHtml = `
+    <div class="ts-filters">
+        <button class="ts-flt active" data-dif="">TODOS <span class="ts-flt-count">${tramos.length}</span></button>
+        <button class="ts-flt ts-flt-alta" data-dif="alta">ALTA <span class="ts-flt-count">${altas}</span></button>
+        <button class="ts-flt ts-flt-media" data-dif="media">MEDIA <span class="ts-flt-count">${medias}</span></button>
+        <button class="ts-flt ts-flt-baja" data-dif="baja">BAJA <span class="ts-flt-count">${bajas}</span></button>
+    </div>`;
+
+    const cardsHtml = `<div class="ts-grid">${tramos.map((t, i) => {
+        const dc   = difClass(t.dificultad);
+        const pct  = maxKm > 0 ? ((t.distanciaKm || 0) / maxKm * 100).toFixed(1) : 0;
         return `
-        <div class="card">
-            <div class="card-top">
-                <span class="tramo-dist">${t.distanciaKm}<span class="tramo-unit"> km</span></span>
-                <div class="card-meta">
-                    <span class="card-country">${x(t.superficie || '')}</span>
-                </div>
+        <div class="ts-card ts-dif-${dc}" data-dif="${dc}" style="animation-delay:${i*0.028}s">
+            <div class="ts-accent-bar"></div>
+            <div class="ts-head">
+                <span class="ts-ss">SS${String(i+1).padStart(2,'0')}</span>
+                <span class="ts-badge ts-badge-${dc}">${x(t.dificultad||'—')}</span>
             </div>
-            <div class="card-body">
-                <div class="card-name">${x(t.nombre)}</div>
-                <div class="diff-wrap">
-                    <div class="diff-header">
-                        <span class="diff-key">Dificultad</span>
-                        <span class="diff-val ${dif}">${x(t.dificultad || 'N/A')}</span>
-                    </div>
-                    <div class="diff-track">
-                        <div class="diff-fill ${dif}"></div>
-                    </div>
-                </div>
-                <div class="card-rows">
-                    <div class="card-row">
-                        <span class="row-k">Superficie</span>
-                        <span class="row-v">${x(t.superficie || 'N/A')}</span>
-                    </div>
-                    <div class="card-row">
-                        <span class="row-k">Etapa</span>
-                        <span class="row-v">${x(t.etapa?.nombre || 'N/A')}</span>
-                    </div>
-                </div>
+            <div class="ts-km">${t.distanciaKm??'—'}<span class="ts-km-u"> km</span></div>
+            <div class="ts-bar-wrap"><div class="ts-bar-fill ts-bar-${dc}" style="width:${pct}%"></div></div>
+            <div class="ts-name">${x(t.nombre)}</div>
+            <div class="ts-foot">
+                <span class="ts-chip">${x(t.superficie||'—')}</span>
+                ${t.etapa ? `<span class="ts-etapa-lbl">${x(t.etapa.nombre)}</span>` : ''}
             </div>
-        </div>
-    `}).join('');
+        </div>`
+    }).join('')}</div>`;
+
+    grid.innerHTML = statsHtml + filterHtml + cardsHtml;
+
+    grid.querySelectorAll('.ts-flt').forEach(btn => {
+        btn.addEventListener('click', () => {
+            grid.querySelectorAll('.ts-flt').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const dif = btn.dataset.dif;
+            grid.querySelectorAll('.ts-card').forEach(c => {
+                c.style.display = (!dif || c.dataset.dif === dif) ? '' : 'none';
+            });
+        });
+    });
 }
 
 // ================================================

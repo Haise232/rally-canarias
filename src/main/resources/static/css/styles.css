@@ -2585,3 +2585,238 @@ body {
 .sm-rd-ret  { color: var(--red); font-style: italic; }
 .sm-rd-none { color: var(--w08); }
 .sm-rd-fut  { color: var(--w08); }
+
+/* ================================================
+   TRAMOS — Rally Stage Board
+   ================================================ */
+
+/* Override the container grid when it has ts content */
+#tramos-grid { display: block; }
+
+/* ── Stats bar ── */
+.ts-stats {
+    display: flex;
+    align-items: stretch;
+    background: var(--surface-1);
+    border: 1px solid var(--w08);
+    margin-bottom: 14px;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+.ts-stats::-webkit-scrollbar { display: none; }
+
+.ts-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 24px;
+    flex: 1;
+    min-width: 100px;
+    gap: 3px;
+}
+.ts-stat-v {
+    font-family: var(--f-data);
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--w100);
+    line-height: 1;
+}
+.ts-v-alta  { color: var(--red-hot) !important; }
+.ts-v-media { color: var(--amber) !important; }
+.ts-v-baja  { color: var(--green) !important; }
+.ts-stat-l {
+    font-size: 9px;
+    font-weight: 600;
+    color: var(--w35);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+}
+.ts-sep {
+    width: 1px;
+    background: var(--w08);
+    flex-shrink: 0;
+    align-self: stretch;
+}
+
+/* ── Filter bar ── */
+.ts-filters {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+}
+.ts-flt {
+    font-family: var(--f-data);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    padding: 6px 14px;
+    background: transparent;
+    border: 1px solid var(--w15);
+    color: var(--w35);
+    cursor: pointer;
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s var(--ease-std);
+}
+.ts-flt:hover { color: var(--w85); border-color: var(--w35); }
+.ts-flt.active { color: var(--w100); border-color: var(--w35); background: var(--w08); }
+.ts-flt-alta.active  { border-color: var(--red);   background: var(--red-tint); color: var(--red-hot); }
+.ts-flt-media.active { border-color: var(--amber); background: var(--amber-t);  color: var(--amber); }
+.ts-flt-baja.active  { border-color: var(--green); background: var(--green-t);  color: var(--green); }
+.ts-flt-count {
+    font-size: 9px;
+    opacity: 0.6;
+    font-weight: 400;
+}
+
+/* ── Cards grid ── */
+.ts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1px;
+    background: var(--w08);
+    border: 1px solid var(--w08);
+}
+
+/* ── Individual stage card ── */
+.ts-card {
+    position: relative;
+    background: var(--surface-1);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: background 0.18s var(--ease-std);
+    animation: ts-appear 0.38s var(--ease) both;
+    cursor: default;
+}
+@keyframes ts-appear {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.ts-card:hover { background: var(--surface-2); }
+
+/* Colored left accent strip */
+.ts-accent-bar {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    transition: width 0.18s var(--ease-std);
+}
+.ts-card:hover .ts-accent-bar { width: 4px; }
+.ts-dif-alta  .ts-accent-bar { background: var(--red); }
+.ts-dif-media .ts-accent-bar { background: var(--amber); }
+.ts-dif-baja  .ts-accent-bar { background: var(--green); }
+
+/* Head: SS number + badge */
+.ts-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 13px 13px 0 16px;
+}
+.ts-ss {
+    font-family: var(--f-data);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+}
+.ts-dif-alta  .ts-ss { color: var(--red); }
+.ts-dif-media .ts-ss { color: var(--amber); }
+.ts-dif-baja  .ts-ss { color: var(--green); }
+
+.ts-badge {
+    font-family: var(--f-data);
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 2px 5px;
+    border-radius: 1px;
+    border: 1px solid;
+}
+.ts-badge-alta  { color: var(--red-hot); border-color: rgba(225,6,0,0.35);   background: rgba(225,6,0,0.08); }
+.ts-badge-media { color: var(--amber);   border-color: rgba(255,149,0,0.35); background: rgba(255,149,0,0.08); }
+.ts-badge-baja  { color: var(--green);   border-color: rgba(0,214,143,0.3);  background: rgba(0,214,143,0.08); }
+
+/* Distance — hero number */
+.ts-km {
+    font-family: var(--f-display);
+    font-size: 44px;
+    font-weight: 800;
+    color: var(--w100);
+    line-height: 1;
+    padding: 5px 13px 0 16px;
+    letter-spacing: -0.02em;
+}
+.ts-km-u {
+    font-size: 15px;
+    font-weight: 400;
+    color: var(--w35);
+    letter-spacing: 0;
+}
+
+/* Distance bar (relative to longest tramo) */
+.ts-bar-wrap {
+    height: 2px;
+    background: var(--w04);
+    margin: 8px 16px 0;
+}
+.ts-bar-fill {
+    height: 100%;
+    transition: width 0.6s var(--ease);
+}
+.ts-bar-alta  { background: var(--red); }
+.ts-bar-media { background: var(--amber); }
+.ts-bar-baja  { background: var(--green); }
+
+/* Stage name */
+.ts-name {
+    font-family: var(--f-body);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--w60);
+    padding: 7px 13px 10px 16px;
+    line-height: 1.35;
+    flex: 1;
+}
+
+/* Footer */
+.ts-foot {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 13px 12px 16px;
+    border-top: 1px solid var(--w04);
+    flex-wrap: wrap;
+}
+.ts-chip {
+    font-family: var(--f-data);
+    font-size: 8px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--w35);
+    background: var(--w04);
+    border: 1px solid var(--w08);
+    padding: 2px 6px;
+    border-radius: 1px;
+}
+.ts-etapa-lbl {
+    font-size: 10px;
+    color: var(--w35);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 150px;
+}
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+    .ts-grid { grid-template-columns: 1fr 1fr; }
+    .ts-km   { font-size: 34px; }
+    .ts-stat { padding: 12px 14px; min-width: 80px; }
+}

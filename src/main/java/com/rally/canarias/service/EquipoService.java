@@ -5,6 +5,7 @@ import com.rally.canarias.repository.EquipoRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class EquipoService {
@@ -20,8 +21,8 @@ public class EquipoService {
         return equipoRepository.findAll();
     }
 
-    public Equipo findById(Long id) {
-        return equipoRepository.findById(id).orElse(null);
+    public Optional<Equipo> findById(Long id) {
+        return equipoRepository.findById(id);
     }
 
     public Equipo save(Equipo equipo) {

@@ -2,6 +2,7 @@ package com.rally.canarias.controller;
 
 import com.rally.canarias.entity.Equipo;
 import com.rally.canarias.service.EquipoService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,66 +18,61 @@ public class EquipoController {
         this.equipoService = equipoService;
     }
 
-    // GET lista
     @GetMapping
     public List<Equipo> getAll() {
         return equipoService.findAll();
     }
 
-    // GET por id
     @GetMapping("/{id}")
     public ResponseEntity<Equipo> getById(@PathVariable Long id) {
-        Equipo equipo = equipoService.findById(id);
-        if (equipo == null) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(equipo);
+        return equipoService.findById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
-    // GET buscar por nombre
     @GetMapping("/buscar")
-    public List<Equipo> buscarPorNombre(@RequestParam String nombre) {
+    public List<Equipo> buscarPorNombre(@RequestParam(required = false) String nombre) {
+        if (nombre == null || nombre.isBlank()) {
+            return equipoService.findAll();
+        }
         return equipoService.findByNombreContainingIgnoreCase(nombre);
     }
 
-    // GET por nacionalidad
     @GetMapping("/nacionalidad")
-    public List<Equipo> getByNacionalidad(@RequestParam String nacionalidad) {
+    public List<Equipo> getByNacionalidad(@RequestParam(required = false) String nacionalidad) {
+        if (nacionalidad == null || nacionalidad.isBlank()) {
+            return equipoService.findAll();
+        }
         return equipoService.findByNacionalidad(nacionalidad);
     }
 
-    // GET contar pilotos
     @GetMapping("/{id}/pilotos/count")
     public ResponseEntity<Long> countPilotos(@PathVariable Long id) {
-        Long count = equipoService.countPilotosByEquipoId(id);
-        return ResponseEntity.ok(count);
+        return ResponseEntity.ok(equipoService.countPilotosByEquipoId(id));
     }
 
-    // POST crear
     @PostMapping
-    public Equipo create(@RequestBody Equipo equipo) {
-        return equipoService.save(equipo);
+    public ResponseEntity<Equipo> create(@RequestBody Equipo equipo) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(equipoService.save(equipo));
     }
 
-    // PUT actualizar
     @PutMapping("/{id}")
     public ResponseEntity<Equipo> update(@PathVariable Long id, @RequestBody Equipo equipo) {
-        Equipo existing = equipoService.findById(id);
-        if (existing == null) {
-            return ResponseEntity.notFound().build();
-        }
-        equipo.setId(id);
-        return ResponseEntity.ok(equipoService.save(equipo));
+        return equipoService.findById(id)
+                .map(existing -> {
+                    equipo.setId(id);
+                    return ResponseEntity.ok(equipoService.save(equipo));
+                })
+                .orElse(ResponseEntity.notFound().build());
     }
 
-    // DELETE eliminar
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
-        Equipo existing = equipoService.findById(id);
-        if (existing == null) {
-            return ResponseEntity.notFound().build();
-        }
-        equipoService.deleteById(id);
-        return ResponseEntity.noContent().build();
+        return equipoService.findById(id)
+                .map(existing -> {
+                    equipoService.deleteById(id);
+                    return ResponseEntity.<Void>noContent().<Void>build();
+                })
+                .orElse(ResponseEntity.notFound().build());
     }
 }

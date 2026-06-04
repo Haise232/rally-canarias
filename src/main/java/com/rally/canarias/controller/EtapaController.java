@@ -11,7 +11,7 @@ import com.rally.canarias.entity.Etapa;
 import com.rally.canarias.service.EtapaService;
 
 @RestController
-@RequestMapping("/api/v1/etapas")
+@RequestMapping("/api/etapas")
 public class EtapaController {
 
     private final EtapaService etapaService;

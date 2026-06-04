@@ -6,6 +6,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class PilotoService {
@@ -21,8 +22,8 @@ public class PilotoService {
         return pilotoRepository.findAll();
     }
 
-    public Piloto findById(Long id) {
-        return pilotoRepository.findById(id).orElse(null);
+    public Optional<Piloto> findById(Long id) {
+        return pilotoRepository.findById(id);
     }
 
     public Piloto save(Piloto piloto) {
@@ -41,6 +42,9 @@ public class PilotoService {
     public List<Piloto> findByNombreContainingIgnoreCase(String nombre, String sortField, String sortDirection) {
         Sort.Direction direction = sortDirection.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
         Sort sort = Sort.by(direction, sortField);
+        if (nombre == null || nombre.isBlank()) {
+            return pilotoRepository.findAll(sort);
+        }
         return pilotoRepository.findByNombreContainingIgnoreCase(nombre, sort);
     }
 
