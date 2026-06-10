@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.data.domain.Sort;
 
 import com.rally.canarias.entity.Dificultad;
 import com.rally.canarias.entity.Tramo;
@@ -15,7 +16,7 @@ public interface TramoRepository extends JpaRepository<Tramo, Long> {
 
     List<Tramo> findByEtapaId(Long etapaId);
 
-    List<Tramo> findByNombreContainingIgnoreCase(org.springframework.data.domain.Sort sort, String nombre);
+    List<Tramo> findByNombreContainingIgnoreCase(Sort sort, String nombre);
 
     List<Tramo> findByDificultad(Dificultad dificultad);
 
