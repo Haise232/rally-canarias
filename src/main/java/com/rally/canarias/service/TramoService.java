@@ -42,7 +42,7 @@ public class TramoService {
         tramoRepository.deleteById(id);
     }
 
-    public List<Tramo> findByName(String nombre, Sort sort) {
+    public List<Tramo> findByName(Sort sort, String nombre) {
         return tramoRepository.findByNombreContainingIgnoreCase(sort, nombre);
     }
 

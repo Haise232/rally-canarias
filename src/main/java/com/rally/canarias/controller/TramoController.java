@@ -43,7 +43,7 @@ public class TramoController {
         if (nombre == null || nombre.isBlank()) {
             return ResponseEntity.ok(tramoService.findAll());
         }
-        return ResponseEntity.ok(tramoService.findByName(nombre, sort));
+        return ResponseEntity.ok(tramoService.findByName(sort, nombre));
     }
 
     @PostMapping
